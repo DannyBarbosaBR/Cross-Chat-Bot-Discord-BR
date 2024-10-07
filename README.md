@@ -22,3 +22,5 @@ Esses comandos (e outras funcionalidades) estão explicados no arquivo [bot.py](
 No arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py), substitua [`'YOUR BOTS TOKEN HERE'`](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py#L6) pelo token do bot que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
 
 Você pode então executar o arquivo `bot.py` enviando `python bot.py` em uma janela de prompt de comando / terminal (você também deve instalar o Python (e quaisquer módulos ausentes indicados no início do arquivo `bot.py`) se ainda não o fez; eu usei Python 3.8).
+
+Quem puder me ajudar a fazer essa confgufoco grato, k keu Discord e @dannybarbosabr
