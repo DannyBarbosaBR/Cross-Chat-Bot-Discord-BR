@@ -1,10 +1,3 @@
-### AVISO!!!!!!
-Eu fiz isso quando tinha 13 anos. Não leve este projeto como referência de como eu codifico agora, apenas como referência de quanto tempo faz que comecei a aprender a usar o git. Veja [cade](https://github.com/clearlakes/cade) para um projeto melhor meu para olhar!
-
-O código e tudo depois desta linha está inalterado!
-
----
-
 # Bot de Cross-chat para Discord
 Este é apenas um exemplo de um bot de cross-chat para quem quer saber como funciona / hospedar um por conta própria.
 
