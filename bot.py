@@ -2,8 +2,32 @@ import discord
 from discord.ext import commands
 import json
 import datetime as dt
+from discord.ext import commands
 
-TOKEN = 'a'
+# Defina os intents que você deseja usar
+intents = discord.Intents.default()  # Cria um objeto de intents padrão
+intents.messages = True  # Ativa o recebimento de mensagens
+intents.guilds = True  # Ativa eventos relacionados a guildas (servidores)
+
+# Crie a instância do bot com o prefixo e os intents
+cliente = commands.Bot(command_prefix='/', intents=intents)
+
+# Um exemplo de comando
+@cliente.command()
+async def olá(ctx):
+    await ctx.send('Olá! Como posso ajudar?')
+
+# Um exemplo de evento para quando o bot estiver pronto
+@cliente.event
+async def on_ready():
+    print(f'Bot está conectado como {cliente.user}')
+
+# Inicie o bot
+cliente.run('')
+
+
+TOKEN = ''
+
 client = commands.Bot(command_prefix='/')
 client.remove_command('help')
 
