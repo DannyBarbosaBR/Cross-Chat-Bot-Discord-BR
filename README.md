@@ -1,7 +1,6 @@
 # Bot de Cross-chat para Discord
-![17283355199297686124544190477911]()
 
-https://www.spriters-resource.com/resources/sheet_icons/166/168745.gif?updated=1644516257
+![17283355199297686124544190477911](https://github.com/user-attachments/assets/20dfea0d-08ec-45b1-9528-7dd669a49aed)
 
 Este é apenas um exemplo de um bot de cross-chat para quem quer saber como funciona / hospedar um por conta própria.
 
