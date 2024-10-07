@@ -4,12 +4,12 @@ import json
 import datetime as dt
 
 TOKEN = 'YOUR BOTS TOKEN HERE'
-client = commands.Bot(command_prefix='.')
+client = commands.Bot(command_prefix='/')
 client.remove_command('help')
 
 @client.event
 async def on_ready():
-    # Lê cada arquivo json para comandos
+    # Lê cada arquivo JSON para comandos
     data = read_json("blacklist")
     data_mod = read_json("moderators")
     data_channel = read_json("channels")
@@ -22,7 +22,7 @@ async def on_ready():
 async def on_message(message):
     # Ignora mensagens que são comandos
     await client.process_commands(message)
-    if message.content.startswith("."):
+    if message.content.startswith("/"):
         return
     if message.author.id == client.user.id:
         return
@@ -56,8 +56,11 @@ async def on_message(message):
                     embed.set_author(name=chat_name, icon_url=message.author.avatar_url)
                     embed.set_footer(text=server_name, icon_url=message.guild.icon_url)
                     embed.timestamp = message.created_at
+                    
+                    # Envia links de compartilhamento para imagens e vídeos
                     if message.attachments:
-                        embed.set_image(url=message.attachments[0].url)
+                        for attachment in message.attachments:
+                            embed.add_field(name="Arquivo Enviado", value=attachment.url)
                     else:
                         await message.delete()  # Deleta a mensagem se não houver anexo
 
@@ -70,19 +73,18 @@ async def on_message(message):
                     if message.attachments:
                         await message.delete()  # Deleta a mensagem se houver anexo
 
-@client.command()
+@client.slash_command(name='setchannel', description='Configura o canal para cross-chat.')
 async def setchannel(ctx):
     # Adiciona o ID do canal em channels.json
-    await ctx.send("Configurando canal..")
-    channel_id = ctx.message.channel.id
+    await ctx.respond("Configurando canal..")
+    channel_id = ctx.channel.id
     client.channel_list.append(channel_id)
     data = read_json("channels")
     data["channelList"].append(channel_id)
     write_json(data, "channels")
-    await ctx.send("Canal configurado! Escreva neste canal para cross-chat.")
+    await ctx.respond("Canal configurado! Escreva neste canal para cross-chat.")
 
-@client.command()
-@commands.is_owner()
+@client.slash_command(name='mod', description='Adiciona um usuário como moderador.')
 async def mod(ctx, user: discord.Member):
     # Adiciona o ID do usuário como moderador
     client.moderators.append(user.id)
@@ -95,10 +97,9 @@ async def mod(ctx, user: discord.Member):
         color=discord.Color.blurple()
     )
     embed.set_thumbnail(url=user.avatar_url)
-    await ctx.send(embed=embed)
+    await ctx.respond(embed=embed)
 
-@client.command()
-@commands.is_owner()
+@client.slash_command(name='unmod', description='Remove um usuário como moderador.')
 async def unmod(ctx, user: discord.Member):
     # Remove o ID do usuário da lista de moderadores
     client.moderators.remove(user.id)
@@ -111,12 +112,12 @@ async def unmod(ctx, user: discord.Member):
         color=discord.Color.red()
     )
     embed.set_thumbnail(url=user.avatar_url)
-    await ctx.send(embed=embed)
+    await ctx.respond(embed=embed)
 
-@client.command()
+@client.slash_command(name='blacklist', description='Coloca um membro na blacklist.')
 async def blacklist(ctx, user: discord.Member):
     # Verifica se o autor do comando é um moderador
-    if ctx.message.author.id in client.moderators:
+    if ctx.author.id in client.moderators:
         # Adiciona o ID do usuário à blacklist
         client.blacklisted_users.append(user.id)
         data = read_json("blacklist")
@@ -128,14 +129,14 @@ async def blacklist(ctx, user: discord.Member):
             color=discord.Color.red()
         )
         embed.set_thumbnail(url=user.avatar_url)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
     else:
-        await ctx.send("Você não tem permissão para fazer isso")
+        await ctx.respond("Você não tem permissão para fazer isso.")
 
-@client.command()
+@client.slash_command(name='unblacklist', description='Remove um membro da blacklist.')
 async def unblacklist(ctx, user: discord.Member):
     # Verifica se o autor do comando é um moderador
-    if ctx.message.author.id in client.moderators:
+    if ctx.author.id in client.moderators:
         # Remove o ID do usuário da blacklist
         client.blacklisted_users.remove(user.id)
         data = read_json("blacklist")
@@ -147,10 +148,9 @@ async def unblacklist(ctx, user: discord.Member):
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=user.avatar_url)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
     else:
-        await ctx.send("Você não tem permissão para fazer isso")
-        return
+        await ctx.respond("Você não tem permissão para fazer isso.")
 
 # Funções para ler e escrever dados nos arquivos JSON
 def read_json(filename):
@@ -170,4 +170,5 @@ def write_json(data, filename):
         json.dump(data, file, indent=4)
 
 client.run(TOKEN)
+
     
