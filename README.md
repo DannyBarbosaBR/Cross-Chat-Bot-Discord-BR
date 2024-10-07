@@ -10,9 +10,9 @@ Os créditos vão para as muitas perguntas no Stack Overflow que me ajudaram a d
 
 ## Comandos
 Os comandos incluídos são os seguintes:
-- `.setchannel` = define o canal de cross-chat para o que o comando é enviado
-- `.mod (usuário)` e `.unmod (usuário)` = modera e desmodera um usuário (moderadores têm acesso aos comandos de blacklist, apenas o proprietário do bot pode enviar `.mod` e `.unmod`)
-- `.blacklist (usuário)` e `.unblacklist (usuário)` = coloca um usuário na blacklist e o remove da blacklist (bana o usuário do cross-chat)
+- `/setchannel` = define o canal de cross-chat para o que o comando é enviado
+- `/mod (usuário)` e `/unmod (usuário)` = modera e desmodera um usuário (moderadores têm acesso aos comandos de blacklist, apenas o proprietário do bot pode enviar `/mod` e `/unmod`)
+- `/blacklist (usuário)` e `.unblacklist (usuário)` = coloca um usuário na blacklist e o remove da blacklist (bana o usuário do cross-chat)
 
 Esses comandos (e outras funcionalidades) estão explicados no arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py).
 
