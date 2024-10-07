@@ -1,5 +1,5 @@
 # Bot de Cross-chat para Discord
-![17283355199297686124544190477911](https://github.com/user-attachments/assets/5912c34b-209a-450d-9f02-fdbb9ff3373e)
+![17283355199297686124544190477911]()
 
 https://www.spriters-resource.com/resources/sheet_icons/166/168745.gif?updated=1644516257
 
