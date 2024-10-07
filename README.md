@@ -23,4 +23,4 @@ No arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot
 
 Você pode então executar o arquivo `bot.py` enviando `python bot.py` em uma janela de prompt de comando / terminal (você também deve instalar o Python (e quaisquer módulos ausentes indicados no início do arquivo `bot.py`) se ainda não o fez; eu usei Python 3.8).
 
-Quem puder me ajudar a fazer essa confgufoco grato, o meu Discord e @dannybarbosabr
+Quem puder me ajudar a fazer essa configurações grato, o meu Discord e @dannybarbosabr
