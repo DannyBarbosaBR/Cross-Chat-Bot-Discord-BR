@@ -1,29 +1,28 @@
-### DISCLAIMER!!!!!!
-I made this when I was 13. Do not take this project as a reference to how I code now, only as a reference to how long ago I started learning how to use git. See [cade](https://github.com/clearlakes/cade) for a better project of mine to look at!
+### AVISO!!!!!!
+Eu fiz isso quando tinha 13 anos. Não leve este projeto como referência de como eu codifico agora, apenas como referência de quanto tempo faz que comecei a aprender a usar o git. Veja [cade](https://github.com/clearlakes/cade) para um projeto melhor meu para olhar!
 
-The code and everything after this line is unchanged!
+O código e tudo depois desta linha está inalterado!
 
 ---
 
+# Bot de Cross-chat para Discord
+Este é apenas um exemplo de um bot de cross-chat para quem quer saber como funciona / hospedar um por conta própria.
 
-# Cross-chat bot for Discord
-This is just an example of a cross-chat bot for anyone who wants to know how it works / host one themselves.
+Este bot também é um dos meus primeiros projetos em Python, então, se algo puder ser melhorado, fique à vontade para me avisar.
 
-This bot is also one of my first projects in Python, so if anything can be improved be sure to let me know.
+Os créditos vão para as muitas perguntas no Stack Overflow que me ajudaram a descobrir o que é necessário para fazê-lo funcionar!
 
-Credit goes to the many Stack Overflow questions that have helped me in figuring out what is needed to make it work!
+## Comandos
+Os comandos incluídos são os seguintes:
+- `.setchannel` = define o canal de cross-chat para o que o comando é enviado
+- `.mod (usuário)` e `.unmod (usuário)` = modera e desmodera um usuário (moderadores têm acesso aos comandos de blacklist, apenas o proprietário do bot pode enviar `.mod` e `.unmod`)
+- `.blacklist (usuário)` e `.unblacklist (usuário)` = coloca um usuário na blacklist e o remove da blacklist (bana o usuário do cross-chat)
 
-## Commands
-The commands included are as follows:
-- `.setchannel` = sets the cross-chatting channel to the one that the command is sent in
-- `.mod (user)` and `.unmod (user)` = mods and unmods a user (moderators have access to the blacklist commands, only the bot owner can send `.mod` and `.unmod`)
-- `.blacklist (user)` and `.unblacklist (user)` = blacklists and unblacklists a user (bans them from cross-chatting)
+Esses comandos (e outras funcionalidades) estão explicados no arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py).
 
-These commands (and other stuff) are explained in the [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py) file.
+## Executando o bot
+(Os três arquivos `.json` neste repositório são necessários para que o bot funcione.)
 
-## Running the bot
-(The three `.json` files in this repo are necessary for the bot to function.)
+No arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py), substitua [`'YOUR BOTS TOKEN HERE'`](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py#L6) pelo token do bot que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
 
-In the [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py) file, replace [`'YOUR BOTS TOKEN HERE'`](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py#L6) with the bot token you got from creating your bot [here](https://discord.com/developers/applications).
-
-You can then run the `bot.py` file by sending `python bot.py` in a command prompt window / terminal (you should also install Python (and any missing modules indicated at the beginning of the `bot.py` file) if you haven't already; I used Python 3.8)
+Você pode então executar o arquivo `bot.py` enviando `python bot.py` em uma janela de prompt de comando / terminal (você também deve instalar o Python (e quaisquer módulos ausentes indicados no início do arquivo `bot.py`) se ainda não o fez; eu usei Python 3.8).
