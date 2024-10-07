@@ -1,4 +1,6 @@
 # Bot de Cross-chat para Discord
+https://www.spriters-resource.com/resources/sheet_icons/166/168745.gif?updated=1644516257
+
 Este é apenas um exemplo de um bot de cross-chat para quem quer saber como funciona / hospedar um por conta própria.
 
 Este bot também é um dos meus primeiros projetos em Python, então, se algo puder ser melhorado, fique à vontade para me avisar.
