@@ -3,7 +3,7 @@ from discord.ext import commands
 import json
 import datetime as dt
 
-TOKEN = 'YOUR BOTS TOKEN HERE'
+TOKEN = 'MTI5MjY0Mzc1MjIzNzczMTk1MA.G6ByvG.b4oG4yDn5rZfna0n8KhsYNrbUakZuMOpGE_i5o'
 client = commands.Bot(command_prefix='/')
 client.remove_command('help')
 
