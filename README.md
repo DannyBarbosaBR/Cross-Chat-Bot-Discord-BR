@@ -25,7 +25,7 @@ No arquivo `Danny-BOT.js`, substitua o token do bot pela sua chave de autentica�
 
 Você pode então executar o arquivo `Danny-BOT.js` enviando `node Danny-BOT.js` em uma janela de terminal. 
 
-Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no guia de instalação.
+Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no Guia De Instalação, anexado aaui também.
 
 Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
 
