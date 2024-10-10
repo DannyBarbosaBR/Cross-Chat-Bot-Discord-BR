@@ -25,13 +25,29 @@ const client = new Client({
 });
 
 // Função para carregar conexões
+
 function loadConnections() {
     if (fs.existsSync('Salvamento.json')) {
-        const data = fs.readFileSync('Salvamento.json');
-        const parsedData = JSON.parse(data);
-        channelConnections = parsedData.channelConnections || {};
-        globalConnections = parsedData.globalConnections || [];
-        bannedServers = parsedData.bannedServers || [];
+        try {
+            const data = fs.readFileSync('Salvamento.json', 'utf8');
+            if (data.trim().length === 0) {
+                // Se o arquivo estiver vazio, inicialize com dados padrão
+                channelConnections = {};
+                globalConnections = [];
+                bannedServers = [];
+            } else {
+                const parsedData = JSON.parse(data);
+                channelConnections = parsedData.channelConnections || {};
+                globalConnections = parsedData.globalConnections || [];
+                bannedServers = parsedData.bannedServers || [];
+            }
+        } catch (error) {
+            console.error("Erro ao carregar conexões: ", error);
+            // Inicialize com dados padrão em caso de erro
+            channelConnections = {};
+            globalConnections = [];
+            bannedServers = [];
+        }
     }
 }
 
