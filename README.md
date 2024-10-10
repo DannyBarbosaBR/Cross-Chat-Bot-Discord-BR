@@ -1,26 +1,43 @@
+Claro! Aqui está a versão adaptada do seu texto, focando no seu bot Discord:
+
 # Bot de Cross-chat para Discord
 
-![17283355199297686124544190477911](https://github.com/user-attachments/assets/20dfea0d-08ec-45b1-9528-7dd669a49aed)
+![Bot de Cross-chat](https://github.com/user-attachments/assets/20dfea0d-08ec-45b1-9528-7dd669a49aed)
 
-Este é apenas um exemplo de um bot de cross-chat para quem quer saber como funciona / hospedar um por conta própria.
+Este é um bot de cross-chat para Discord, ideal para quem deseja entender como funciona e hospedar um por conta própria. Este projeto foi desenvolvido em JavaScript usando Node.js e a biblioteca discord.js, e é um dos meus primeiros projetos nesse ambiente.
 
-Este bot também é um dos meus primeiros projetos em Python, então, se algo puder ser melhorado, fique à vontade para me avisar.
-
-Os créditos vão para as muitas perguntas no Stack Overflow que me ajudaram a descobrir o que é necessário para fazê-lo funcionar!
+Os créditos vão para todas as perguntas no Stack Overflow que me ajudaram a descobrir o que era necessário para fazê-lo funcionar!
 
 ## Comandos
 Os comandos incluídos são os seguintes:
-- `/setchannel` = define o canal de cross-chat para o que o comando é enviado
-- `/mod (usuário)` e `/unmod (usuário)` = modera e desmodera um usuário (moderadores têm acesso aos comandos de blacklist, apenas o proprietário do bot pode enviar `/mod` e `/unmod`)
-- `/blacklist (usuário)` e `.unblacklist (usuário)` = coloca um usuário na blacklist e o remove da blacklist (bana o usuário do cross-chat)
+- `!criador` = Mostra quem é o criador do bot.
+- `!servidores` = Mostra todos os servidores conectados.
+- `!global` = Conecta o canal atual a outros canais globais.
+- `!conectar #canal` = Conecta o canal atual a um canal mencionado de outro servidor.
+- `!desconectar` = Desconecta o canal atual de um canal de outro servidor.
 
-Esses comandos (e outras funcionalidades) estão explicados no arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py).
+Esses comandos e outras funcionalidades estão detalhados no código do bot.
 
 ## Executando o bot
-(Os três arquivos `.json` neste repositório são necessários para que o bot funcione.)
+(Os dados de conexão são salvos em um arquivo `Salvamento.json` necessário para que o bot funcione.)
 
-No arquivo [bot.py](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py), substitua [`'YOUR BOTS TOKEN HERE'`](https://github.com/go-off-i-guess/cross-chat/blob/master/bot.py#L6) pelo token do bot que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
+No arquivo `index.js`, substitua o token do bot pela sua chave de autenticação que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
 
-Você pode então executar o arquivo `bot.py` enviando `python bot.py` em uma janela de prompt de comando / terminal (você também deve instalar o Python (e quaisquer módulos ausentes indicados no início do arquivo `bot.py`) se ainda não o fez; eu usei Python 3.8).
+Você pode então executar o arquivo `index.js` enviando `node index.js` em uma janela de terminal. Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no guia de instalação.
 
-Quem puder me ajudar a fazer essa configurações grato, o meu Discord e @dannybarbosabr
+Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: @dannybarbosabr.
+
+Como Usar:
+
+1. Copie todo o texto acima.
+
+
+2. Cole no seu arquivo README.md no GitHub.
+
+
+3. Salve e visualize no GitHub para verificar a formatação.
+
+
+
+Se precisar de mais alguma coisa, é só avisar!
+
