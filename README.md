@@ -1,4 +1,3 @@
-Claro! Aqui está a versão adaptada do seu texto, focando no seu bot Discord:
 
 # Bot de Cross-chat para Discord
 
@@ -12,7 +11,7 @@ Os créditos vão para todas as perguntas no Stack Overflow que me ajudaram a de
 Os comandos incluídos são os seguintes:
 - `!criador` = Mostra quem é o criador do bot.
 - `!servidores` = Mostra todos os servidores conectados.
-- `!global` = Conecta o canal atual a outros canais globais.
+- `!global #canal` = Conecta o canal atual a outros canais globais.
 - `!conectar #canal` = Conecta o canal atual a um canal mencionado de outro servidor.
 - `!desconectar` = Desconecta o canal atual de um canal de outro servidor.
 
