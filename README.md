@@ -21,7 +21,9 @@ Esses comandos e outras funcionalidades estão detalhados no código do bot.
 
 No arquivo `index.js`, substitua o token do bot pela sua chave de autenticação que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
 
-Você pode então executar o arquivo `index.js` enviando `node index.js` em uma janela de terminal. Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no guia de instalação.
+Você pode então executar o arquivo `index.js` enviando `node index.js` em uma janela de terminal. 
+
+Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no guia de instalação.
 
 Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
 
