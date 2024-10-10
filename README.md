@@ -62,4 +62,32 @@ Se você preferir editar o código diretamente no seu dispositivo Android, recom
 
 Embora o AIDE não tenha todos os recursos de um IDE de desktop, ele oferece funcionalidades básicas para edição de código e é prático para fazer alterações rápidas.
 
+Claro! Aqui está a seção explicando como e onde fazer as alterações necessárias no código:
+
+## Configurando o Bot
+
+Antes de executar o bot, você precisa configurar algumas informações essenciais no código. Abra o arquivo `Danny-BOT.js` e localize as seguintes linhas:
+
+```javascript
+// Carregue seu token e cliente secreto diretamente aqui:
+const TOKEN = 'SEU_TOKEN_AQUI'; // Substitua pelo seu token do bot
+const CLIENT_SECRET = 'SEU_CLIENT_SECRET_AQUI'; // Adicione o CLIENT_SECRET aqui
+const WEBHOOK_URL = 'SEU_WEBHOOK_URL_AQUI'; // Coloque seu URL do Webhook aqui
+
+O que fazer:
+
+1. Substitua SEU_TOKEN_AQUI pelo token do seu bot que você obteve ao criá-lo na plataforma do Discord.
+
+
+2. Substitua SEU_CLIENT_SECRET_AQUI pelo seu client secret, caso esteja usando.
+
+
+3. Substitua SEU_WEBHOOK_URL_AQUI pelo URL do webhook que você deseja usar.
+
+
+
+Importante: Certifique-se de fazer essas alterações antes de executar o bot no Termux. Se você não configurar essas informações corretamente, o bot não funcionará.
+
+Após realizar essas modificações, você estará pronto para executar o bot! Se precisar de mais ajuda, sinta-se à vontade para perguntar.
+
 Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
