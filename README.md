@@ -63,7 +63,7 @@ O que fazer:
 
 3. Substitua SEU_WEBHOOK_URL_AQUI pelo URL do webhook que você deseja usar.
 
-## Executor de tarefas Termux
+## Termux
 Para executar o bot no Termux (Android e PC), baixe em:
 - [Termux para Android](https://play.google.com/store/apps/details?id=com.termux)
 - [Termux para PC](https://github.com/termux/termux-app)
