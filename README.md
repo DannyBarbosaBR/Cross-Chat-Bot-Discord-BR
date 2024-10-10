@@ -27,27 +27,6 @@ Você pode então executar o arquivo `Danny-BOT.js` enviando `node Danny-BOT.js`
 
 Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no Guia de Instalação, anexado aqui também..
 
-## Termux
-Para executar o bot no Termux (Android e PC), baixe em:
-- [Termux para Android](https://play.google.com/store/apps/details?id=com.termux)
-- [Termux para PC](https://github.com/termux/termux-app)
-
-### Como Usar no Termux
-1. **Baixe e instale o Termux** no seu dispositivo.
-2. **Abra o Termux** e execute os seguintes comandos para instalar o Node.js e as dependências:
-   ```bash
-   pkg update && pkg upgrade
-   pkg install nodejs
-   pkg install git
-   npm install discord.js node-fetch dotenv
-3. **Inicie o BOt** e execute os seguinte comando para executar o bot
-   
- `node Danny-BOT.js`
-
-### Vídeos que me ajudarem!
-- [Como configurar um bot no Discord](https://youtu.be/f9Mr6_k8KRI?si=7pftL5mxuWA8qYrD): Este vídeo oferece um passo a passo sobre como configurar um bot no Discord, desde a criação até a execução.
-- [Tutorial de instalação e execução de bots no Discord](https://youtu.be/4-aVu1_w18Y?si=uaQSjhGAJS1KrAWM): Aqui você encontrará informações detalhadas sobre como instalar e executar bots no Discord, ideal para iniciantes.
-
 ## Editores de Código
 
 ### Visual Studio Code (PC)
@@ -84,6 +63,26 @@ O que fazer:
 
 3. Substitua SEU_WEBHOOK_URL_AQUI pelo URL do webhook que você deseja usar.
 
+## Executor de tarefas Termux
+Para executar o bot no Termux (Android e PC), baixe em:
+- [Termux para Android](https://play.google.com/store/apps/details?id=com.termux)
+- [Termux para PC](https://github.com/termux/termux-app)
+
+### Como Usar no Termux
+1. **Baixe e instale o Termux** no seu dispositivo.
+2. **Abra o Termux** e execute os seguintes comandos para instalar o Node.js e as dependências:
+   ```bash
+   pkg update && pkg upgrade
+   pkg install nodejs
+   pkg install git
+   npm install discord.js node-fetch dotenv
+3. **Inicie o BOt** e execute os seguinte comando para executar o bot
+   
+ `node Danny-BOT.js`
+
+### Vídeos que me ajudarem!
+- [Como configurar um bot no Discord](https://youtu.be/f9Mr6_k8KRI?si=7pftL5mxuWA8qYrD): Este vídeo oferece um passo a passo sobre como configurar um bot no Discord, desde a criação até a execução.
+- [Tutorial de instalação e execução de bots no Discord](https://youtu.be/4-aVu1_w18Y?si=uaQSjhGAJS1KrAWM): Aqui você encontrará informações detalhadas sobre como instalar e executar bots no Discord, ideal para iniciantes.
 
 Importante: Certifique-se de fazer essas alterações antes de executar o bot no Termux. Se você não configurar essas informações corretamente, o bot não funcionará.
 
