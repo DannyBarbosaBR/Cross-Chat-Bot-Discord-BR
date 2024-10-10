@@ -1,9 +1,28 @@
-
-  "channelConnections": {
-    "1292777035659481110": []
-  },
-  "globalConnections": [
-    "1066820480025243690",
-    "1292813150558752789"
-  ]
+{
+    "channelConnections": {
+        "serverID1": [
+            {
+                "sourceChannelId": "sourceChannelID1",
+                "targetChannelId": "targetChannelID1"
+            },
+            {
+                "sourceChannelId": "sourceChannelID2",
+                "targetChannelId": "targetChannelID2"
+            }
+        ],
+        "serverID2": [
+            {
+                "sourceChannelId": "sourceChannelID3",
+                "targetChannelId": "targetChannelID3"
+            }
+        ]
+    },
+    "globalConnections": [
+        "globalChannelID1",
+        "globalChannelID2"
+    ],
+    "bannedServers": [
+        "bannedServerID1",
+        "bannedServerID2"
+    ]
 }
