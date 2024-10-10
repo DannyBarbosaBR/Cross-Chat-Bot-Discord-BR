@@ -29,16 +29,3 @@ Certifique-se de que o Node.js e as dependências estão instalados, conforme in
 
 Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
 
-Como Usar:
-
-1. Copie todo o texto acima.
-
-
-2. Cole no seu arquivo README.md no GitHub.
-
-
-3. Salve e visualize no GitHub para verificar a formatação.
-
-
-
-Se precisar de mais alguma coisa, é só avisar!
