@@ -42,7 +42,7 @@ Para executar o bot no Termux (Android e PC), baixe em:
    npm install discord.js node-fetch dotenv
 3. **Inicie o BOt** e execute os seguinte comando para executar o bot
    
- node Danny-BOT.js
+ `node Danny-BOT.js`
 
 ### Vídeos que me ajudarem!
 - [Como configurar um bot no Discord](https://youtu.be/f9Mr6_k8KRI?si=7pftL5mxuWA8qYrD): Este vídeo oferece um passo a passo sobre como configurar um bot no Discord, desde a criação até a execução.
@@ -73,7 +73,7 @@ Antes de executar o bot, você precisa configurar algumas informações essencia
 const TOKEN = 'SEU_TOKEN_AQUI'; // Substitua pelo seu token do bot
 const CLIENT_SECRET = 'SEU_CLIENT_SECRET_AQUI'; // Adicione o CLIENT_SECRET aqui
 const WEBHOOK_URL = 'SEU_WEBHOOK_URL_AQUI'; // Coloque seu URL do Webhook aqui
-
+```
 O que fazer:
 
 1. Substitua SEU_TOKEN_AQUI pelo token do seu bot que você obteve ao criá-lo na plataforma do Discord.
@@ -83,7 +83,6 @@ O que fazer:
 
 
 3. Substitua SEU_WEBHOOK_URL_AQUI pelo URL do webhook que você deseja usar.
-
 
 
 Importante: Certifique-se de fazer essas alterações antes de executar o bot no Termux. Se você não configurar essas informações corretamente, o bot não funcionará.
