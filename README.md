@@ -6,7 +6,7 @@ Este é um bot de cross-chat para Discord, ideal para quem deseja entender como 
 
 Este projeto foi desenvolvido em JavaScript usando Node.js e a biblioteca discord.js, e é um dos meus primeiros projetos nesse ambiente com um celular Android apenas.
 
-Os créditos vão para todas as perguntas no Chat GPT e vídeos do YouTube que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade!
+Os créditos vão para todas as perguntas no Chat GPT e vídeos do YouTube que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade, caso voxe queira abaixo im tutorial de criação do bot!
 
 O bot pode enviar mensagens formatadas, incluindo embeds com informações sobre servidores e comandos, ele pode receber e compartilhar mensagens de texto, imagens, áudios e figurinhas entre canais conectados globalmente, mantendo referências a mensagens originais. 
 
