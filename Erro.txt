@@ -1,20 +1,22 @@
-/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/util/BitField.js:174
-    throw new DiscordjsRangeError(ErrorCodes.BitFieldInvalid, bit);
-          ^
-
-RangeError [BitFieldInvalid]: Invalid bitfield flag or number: undefined.
-    at IntentsBitField.resolve (/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/util/BitField.js:174:11)
-    at /storage/emulated/0/documents/dannybot/node_modules/discord.js/src/util/BitField.js:168:35
-    at Array.map (<anonymous>)
-    at IntentsBitField.resolve (/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/util/BitField.js:168:18)
-    at new BitField (/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/util/BitField.js:33:38)
-    at new IntentsBitField (/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/util/IntentsBitField.js:9:1)
-    at Client._validateOptions (/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/client/Client.js:531:25)
-    at new Client (/storage/emulated/0/documents/dannybot/node_modules/discord.js/src/client/Client.js:80:10)
-    at file:///storage/emulated/0/documents/dannybot/index.js:18:16
-    at ModuleJob.run (node:internal/modules/esm/module_job:262:25) {
-  code: 'BitFieldInvalid'
+{
+    "channelConnections": {
+        "123456789012345678": [  // ID do servidor
+            {
+                "sourceChannelId": "111111111111111111",  // Canal de origem
+                "targetChannelId": "222222222222222222"   // Canal de destino
+            },
+            {
+                "sourceChannelId": "333333333333333333",
+                "targetChannelId": "444444444444444444"
+            }
+        ]
+    },
+    "globalConnections": [
+        "555555555555555555",  // ID de um canal conectado globalmente
+        "666666666666666666"
+    ],
+    "bannedServers": [
+        "777777777777777777",  // ID de um servidor banido
+        "888888888888888888"
+    ]
 }
-
-Node.js v22.8.0
-.../documents/dannybot $
