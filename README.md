@@ -4,7 +4,7 @@
 
 Este é um bot de cross-chat para Discord, ideal para quem deseja entender como funciona e hospedar um por conta própria. Este projeto foi desenvolvido em JavaScript usando Node.js e a biblioteca discord.js, e é um dos meus primeiros projetos nesse ambiente.
 
-Os créditos vão para todas as perguntas no Stack Overflow que me ajudaram a descobrir o que era necessário para fazê-lo funcionar!
+Os créditos vão para todas as perguntas no Chat GPT que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade !
 
 ## Comandos
 Os comandos incluídos são os seguintes:
