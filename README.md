@@ -8,13 +8,19 @@ Este projeto foi desenvolvido em JavaScript usando Node.js e a biblioteca discor
 
 Os créditos vão para todas as perguntas no Chat GPT e vídeos do YouTube que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade!
 
+O bot pode enviar mensagens formatadas, incluindo embeds com informações sobre servidores e comandos. Ele pode receber e compartilhar mensagens de texto, imagens, áudios e figurinhas entre canais conectados globalmente, mantendo referências a mensagens originais. 
+
 ## Comandos
 Os comandos incluídos são os seguintes:
 - `!criador` = Mostra quem é o criador do bot.
 - `!servidores` = Mostra todos os servidores conectados.
 - `!global` = Conecta o canal atual a outros canais globais.
 - `!conectar #canal` = Conecta o canal atual a um canal mencionado de outro servidor.
-- `!desconectar` = Desconecta o canal atual de um canal de outro servidor.
+- `!desconectar #canal` = Desconecta o canal atual de um canal mencionado de outro servidor.
+- `!ajuda` = Mostra todos os comandos disponíveis.
+- `!banir ID` = Bane um servidor da lista de conexões.
+- `!desbanir ID` = Remove o banimento de um servidor.
+
 
 Esses comandos e outras funcionalidades estão detalhados no código do bot.
 
