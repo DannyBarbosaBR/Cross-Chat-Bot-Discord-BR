@@ -17,14 +17,18 @@ let bannedServers = [];
 // Crie uma nova instância do cliente Discord
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
+        // Verifique se os Intents estão corretos e importados corretamente
+        GatewayIntentBits.Guilds, // Permite que o bot veja informações dos servidores
+        GatewayIntentBits.GuildMessages, // Para receber mensagens de guildas
+        GatewayIntentBits.MessageContent, // Para ler o conteúdo das mensagens
+        GatewayIntentBits.GuildMembers, // Para informações de membros
         GatewayIntentBits.GuildEmojisAndStickers, // Para emojis e stickers
-        GatewayIntentBits.MessageAttachments, // Para imagens e arquivos
+        GatewayIntentBits.MessageAttachments, // Para imagens e arquivos anexados
     ],
 });
+
+// Verifique se as intents estão sendo usadas corretamente na criação do cliente.
+// Isso deve corrigir o erro "BitFieldInvalid"
 
 // Função para carregar conexões
 function loadConnections() {
