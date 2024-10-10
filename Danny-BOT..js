@@ -81,22 +81,23 @@ const commands = {
         },
     },
     servidores: {
-        description: 'Mostra todos os servidores conectados',
-        execute: (message) => {
-            const serverCount = client.guilds.cache.size;
-            const serverList = client.guilds.cache.map(guild => guild.name).join('\n');
+    description: 'Mostra todos os servidores conectados',
+    execute: (message) => {
+        const serverCount = client.guilds.cache.size;
+        const serverList = client.guilds.cache.map(guild => `${guild.name} (ID: ${guild.id})`).join('\n');
 
-            const embed = new EmbedBuilder()
-                .setColor('#3498db')
-                .setDescription(`🌍 Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)`)
-                .setFooter({
-                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-                })
-                .setTimestamp();
-            message.channel.send({ embeds: [embed] });
-        },
+        const embed = new EmbedBuilder()
+            .setColor('#3498db')
+            .setDescription(`🌍 Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+        message.channel.send({ embeds: [embed] });
     },
+},
+    
     global: {
         description: 'Conecta o canal atual a outros canais globais.',
         execute: (message) => {
