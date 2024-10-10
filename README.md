@@ -6,7 +6,7 @@ Este é um bot de cross-chat para Discord, ideal para quem deseja entender como 
 
 Este projeto foi desenvolvido em JavaScript usando Node.js e a biblioteca discord.js, e é um dos meus primeiros projetos nesse ambiente com um celular Android apenas.
 
-Os créditos vão para todas as perguntas no Chat GPT e vídeos  do YouTube que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade !
+Os créditos vão para todas as perguntas no Chat GPT e vídeos do YouTube que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade!
 
 ## Comandos
 Os comandos incluídos são os seguintes:
@@ -18,14 +18,13 @@ Os comandos incluídos são os seguintes:
 
 Esses comandos e outras funcionalidades estão detalhados no código do bot.
 
-## Executando o bot
-(Os dados de conexão são salvos em um arquivo `Salvamento.json` necessário para que o bot funcione.)
+## Executando o Bot
+(Os dados de conexão são salvos em um arquivo `Salvamento.json`, necessário para que o bot funcione.)
 
-No arquivo `Danny-BOT.js`, substitua o token do bot pela sua chave de autenticação [Token, Client Id Secreto ] que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
+No arquivo `Danny-BOT.js`, substitua o token do bot pela sua chave de autenticação [Token, Client Id Secreto] que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
 
-Você pode então executar o arquivo `Danny-BOT.js` enviando `node Danny-BOT.js` em uma janela de terminal [termux]. 
+Você pode então executar o arquivo `Danny-BOT.js` enviando `node Danny-BOT.js` em uma janela de terminal [Termux]. 
 
-Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no Guia De Instalação, anexado aaui também.
+Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no Guia de Instalação, anexado aqui também.
 
 Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
-
