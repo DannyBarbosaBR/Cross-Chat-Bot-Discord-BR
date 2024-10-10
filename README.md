@@ -1,4 +1,4 @@
-# Bot de Cross-chat para Discord 🇧🇷
+# Bot de Cross-Chat Satela-Chat! para Discord 🇧🇷
 
 ![Bot de Cross-chat](https://github.com/user-attachments/assets/20dfea0d-08ec-45b1-9528-7dd669a49aed)
 
