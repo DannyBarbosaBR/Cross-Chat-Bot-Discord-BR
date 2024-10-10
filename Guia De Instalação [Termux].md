@@ -78,9 +78,4 @@ Resumo
 
 Esses comandos preparam seu ambiente no Termux para desenvolver e executar um bot Discord, garantindo que você tenha todas as ferramentas e bibliotecas necessárias.
 
-### Como Usar:
-1. Copie todo o texto acima.
-2. Cole no seu arquivo `README.md` no GitHub.
-3. Substitua o link do repositório pelo correto.
-4. Salve e visualize no GitHub para verificar a formatação.
-
+#
