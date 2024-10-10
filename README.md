@@ -1,5 +1,4 @@
-
-# Bot de Cross-chat para Discord
+# Bot de Cross-chat para Discord 🇧🇷
 
 ![Bot de Cross-chat](https://github.com/user-attachments/assets/20dfea0d-08ec-45b1-9528-7dd669a49aed)
 
@@ -11,7 +10,7 @@ Os créditos vão para todas as perguntas no Stack Overflow que me ajudaram a de
 Os comandos incluídos são os seguintes:
 - `!criador` = Mostra quem é o criador do bot.
 - `!servidores` = Mostra todos os servidores conectados.
-- `!global #canal` = Conecta o canal atual a outros canais globais.
+- `!global` = Conecta o canal atual a outros canais globais.
 - `!conectar #canal` = Conecta o canal atual a um canal mencionado de outro servidor.
 - `!desconectar` = Desconecta o canal atual de um canal de outro servidor.
 
@@ -24,7 +23,7 @@ No arquivo `index.js`, substitua o token do bot pela sua chave de autenticação
 
 Você pode então executar o arquivo `index.js` enviando `node index.js` em uma janela de terminal. Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no guia de instalação.
 
-Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: @dannybarbosabr.
+Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
 
 Como Usar:
 
@@ -39,4 +38,3 @@ Como Usar:
 
 
 Se precisar de mais alguma coisa, é só avisar!
-
