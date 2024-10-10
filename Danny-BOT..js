@@ -9,7 +9,7 @@ config();
 const TOKEN = '';
 const CLIENT_SECRET = ''; // Adicione o CLIENT_SECRET aqui
 const WEBHOOK_URL = ''; // Coloque seu URL do Webhook aqui
-const OWNER_ID = 'l'; // Coloque o seu ID de usuário aqui
+const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
 let channelConnections = {};
 let globalConnections = [];
@@ -62,6 +62,7 @@ function formatDateTime() {
     return `🕘 ${date} | 🗓️ ${hours}`;
 }
 //parte 4
+//parte 4
 const commands = {
     criador: {
         description: 'Mostra quem é o criador do bot',
@@ -81,7 +82,7 @@ const commands = {
         description: 'Mostra todos os servidores conectados',
         execute: (message) => {
             const serverCount = client.guilds.cache.size;
-            const serverList = client.guilds.cache.map(guild => guild.name).join('\n');
+            const serverList = client.guilds.cache.map(guild => `${guild.name} (ID: ${guild.id})`).join('\n');
 
             const embed = new EmbedBuilder()
                 .setColor('#3498db')
@@ -219,8 +220,9 @@ const commands = {
         },
     },
 };
-//parte 5
-// Quando o bot estiver online
+
+// parte 5
+// parte 5
 client.once(Events.ClientReady, () => {
     console.log(`🌠 ${client.user.tag} está online`);
     loadConnections();
@@ -268,6 +270,15 @@ client.on(Events.MessageCreate, async (message) => {
                         .setTimestamp();
 
                     await targetChannel.send({ embeds: [embed] });
+
+                    // Responder a mensagem original mencionando o autor
+                    if (message.reference && message.reference.messageId) {
+                        const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
+                        if (originalMessage) {
+                            const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
+                            await targetChannel.send({ content: replyContent, messageReference: { messageId: originalMessage.id } });
+                        }
+                    }
 
                     // Compartilhar anexos como links
                     if (message.attachments.size > 0) {
@@ -343,4 +354,4 @@ client.login(TOKEN)
     .catch(error => {
         console.error('Erro ao logar o bot: ', error);
     });
-                        
+            
