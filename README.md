@@ -6,7 +6,7 @@ Este é um bot de cross-chat para Discord, ideal para quem deseja entender como 
 
 Este projeto foi desenvolvido em JavaScript usando Node.js e a biblioteca discord.js, e é um dos meus primeiros projetos nesse ambiente com um celular Android apenas.
 
-Os créditos vão para todas as perguntas no Chat GPT que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade !
+Os créditos vão para todas as perguntas no Chat GPT e vídeos  do YouTube que me ajudaram a descobrir o que era necessário para fazê-lo funcionar de verdade !
 
 ## Comandos
 Os comandos incluídos são os seguintes:
