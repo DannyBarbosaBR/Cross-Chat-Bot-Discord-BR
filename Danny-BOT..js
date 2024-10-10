@@ -1,6 +1,6 @@
+//parte 1
 import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
-import fetch from 'node-fetch';
 import fs from 'fs';
 
 // Carregue suas variáveis de ambiente
@@ -9,14 +9,13 @@ config();
 const TOKEN = '';
 const CLIENT_SECRET = ''; // Adicione o CLIENT_SECRET aqui
 const WEBHOOK_URL = ''; // Coloque seu URL do Webhook aqui
-const OWNER_ID = ''; // Coloque o seu ID de usuário aqui
+const OWNER_ID = 'l'; // Coloque o seu ID de usuário aqui
 
-cd /mnt/sdcard/documents/dannybot
+let channelConnections = {};
+let globalConnections = [];
+let bannedServers = [];
 
-let channelConnections = {}; // Estrutura para armazenar conexões de canais
-let globalConnections = []; // Estrutura para armazenar conexões globais
-let bannedServers = []; // Servidores banidos
-
+// Crie uma nova instância do cliente Discord
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -25,55 +24,51 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
     ],
 });
+//parte 2
+// Função para carregar conexões
+function loadConnections() {
+    if (fs.existsSync('Salvamento.json')) {
+        try {
+            const data = fs.readFileSync('Salvamento.json', 'utf8');
+            if (data.trim().length === 0) {
+                channelConnections = {};
+                globalConnections = [];
+                bannedServers = [];
+            } else {
+                const parsedData = JSON.parse(data);
+                channelConnections = parsedData.channelConnections || {};
+                globalConnections = parsedData.globalConnections || [];
+                bannedServers = parsedData.bannedServers || [];
+            }
+        } catch (error) {
+            console.error("Erro ao carregar conexões: ", error);
+            channelConnections = {};
+            globalConnections = [];
+            bannedServers = [];
+        }
+    }
+}
 
+// Função para salvar conexões
+function saveConnections() {
+    fs.writeFileSync('Salvamento.json', JSON.stringify({ channelConnections, globalConnections, bannedServers }));
+}
+//parte 3
 // Função que formata a data e hora corretamente
 function formatDateTime() {
     const now = new Date();
     const hours = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     const date = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
-    return `🕘 ${date} | 🗓️ ${hours}`; // Mantém a data e a hora
+    return `🕘 ${date} | 🗓️ ${hours}`;
 }
-
-// Função para carregar conexões
-function loadConnections() {
-    if (fs.existsSync('Salvamento.json')) {
-        const data = fs.readFileSync('Salvamento.json', 'utf-8');
-        
-        // Verifica se o arquivo não está vazio antes de tentar fazer o parse
-        if (data.trim()) {
-            try {
-                const parsedData = JSON.parse(data);
-                channelConnections = parsedData.channelConnections || {}; // Permite reatribuição
-                globalConnections = parsedData.globalConnections || []; // Permite reatribuição
-            } catch (error) {
-                console.error('Erro ao fazer o parse do JSON:', error);
-            }
-        }
-    }
-}
-// Comando de ajuda
-const ajudaDescription = `
-**🌟 Lista de Comandos do Bot Danny Barbosa 🌟**
-
-1️⃣ **!criador** - Mostra quem é o criador do bot.
-2️⃣ **!servidores** - Mostra todos os servidores conectados, incluindo IDs.
-3️⃣ **!global** - Conecta o canal atual a outros canais globais.
-4️⃣ **!conectar #canal** - Conecta o canal atual a um canal mencionado de outro servidor.
-5️⃣ **!desconectar** - Desconecta o canal atual de um canal de outro servidor.
-6️⃣ **!banirservidor [ID do servidor]** - Bane um servidor por seu ID.
-7️⃣ **!desbanirservidor [ID do servidor]** - Desbane um servidor por seu ID.
-8️⃣ **!ajuda** - Mostra esta lista de comandos.
-
-🌠 Danny Barbosa | Acesse o servidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)
-`;
-
+//parte 4
 const commands = {
     criador: {
         description: 'Mostra quem é o criador do bot',
         execute: (message) => {
             const embed = new EmbedBuilder()
                 .setColor('#3498db')
-                .setDescription('🌠 Danny Barbosa | Acesse o servidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)')
+                .setDescription('🌟 Criado por Danny Barbosa! [Acesse o servidor de suporte](https://discord.gg/c8a7Q45ddd) 😎')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -85,11 +80,12 @@ const commands = {
     servidores: {
         description: 'Mostra todos os servidores conectados',
         execute: (message) => {
-            const serverList = client.guilds.cache.map((guild, index) => `${index + 1}. ${guild.name} (ID: ${guild.id})`).join('\n');
+            const serverCount = client.guilds.cache.size;
+            const serverList = client.guilds.cache.map(guild => guild.name).join('\n');
 
             const embed = new EmbedBuilder()
                 .setColor('#3498db')
-                .setDescription(`🌠 Danny Barbosa | Conectado em:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)`)
+                .setDescription(`🌍 Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)`)
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -102,15 +98,16 @@ const commands = {
         description: 'Conecta o canal atual a outros canais globais.',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-                return message.channel.send('Você não tem permissão para usar este comando.');
+                return message.channel.send('❌ Você não tem permissão para usar este comando.');
             }
 
             if (globalConnections.includes(message.channel.id)) {
-                return message.channel.send('Este canal já está conectado globalmente.');
+                return message.channel.send('🔗 Este canal já está conectado globalmente.');
             }
 
             globalConnections.push(message.channel.id);
-            message.channel.send(`Canal <#${message.channel.id}> conectado globalmente. Mensagens aqui serão enviadas para outros canais globais.`);
+            message.channel.send(`🌐 Canal <#${message.channel.id}> conectado globalmente.`);
+            saveConnections();
         },
     },
     conectar: {
@@ -122,7 +119,7 @@ const commands = {
 
             const targetChannel = message.mentions.channels.first();
             if (!targetChannel) {
-                return message.channel.send('Por favor, mencione um canal para conectar.');
+                return message.channel.send('❗ Por favor, mencione um canal para conectar.');
             }
 
             if (!channelConnections[message.guild.id]) {
@@ -134,181 +131,216 @@ const commands = {
                 targetChannelId: targetChannel.id,
             });
 
-            message.channel.send(`Canal <#${message.channel.id}> conectado ao canal <#${targetChannel.id}>.`);
+            message.channel.send(`🔗 Canal <#${message.channel.id}> conectado ao canal <#${targetChannel.id}>.`);
+            saveConnections();
         },
     },
     desconectar: {
-        description: 'Desconecta o canal atual de um canal de outro servidor.',
+        description: 'Desconecta o canal atual de um canal mencionado de outro servidor. Uso: !desconectar #canal',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-                return message.channel.send('Você não tem permissão para usar este comando.');
+                return message.channel.send('❌ Você não tem permissão para usar este comando.');
             }
 
-            const channelId = message.channel.id;
-            if (channelConnections[message.guild.id]) {
-                channelConnections[message.guild.id] = channelConnections[message.guild.id].filter(
-                    (connection) => connection.sourceChannelId !== channelId
-                );
-                message.channel.send(`Canal <#${channelId}> desconectado.`);
+            const targetChannel = message.mentions.channels.first();
+            if (!targetChannel) {
+                return message.channel.send('❗ Por favor, mencione um canal para desconectar.');
+            }
+
+            const channelList = channelConnections[message.guild.id] || [];
+            const index = channelList.findIndex(conn => conn.targetChannelId === targetChannel.id && conn.sourceChannelId === message.channel.id);
+
+            if (index !== -1) {
+                channelList.splice(index, 1);
+                message.channel.send(`🔗 Canal <#${message.channel.id}> desconectado do canal <#${targetChannel.id}>.`);
+                saveConnections();
             } else {
-                message.channel.send('Nenhuma conexão encontrada para este canal.');
+                message.channel.send('⚠️ Este canal não está conectado ao canal mencionado.');
             }
         },
     },
-    banirservidor: {
-        description: 'Bane um servidor pelo ID.',
+    ajuda: {
+        description: 'Mostra todos os comandos disponíveis.',
+        execute: (message) => {
+            const helpText = Object.keys(commands).map(cmd => `\`!${cmd}\`: ${commands[cmd].description}`).join('\n');
+            const embed = new EmbedBuilder()
+                .setColor('#3498db')
+                .setTitle('📜 Comandos Disponíveis')
+                .setDescription(helpText)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            message.channel.send({ embeds: [embed] });
+        },
+    },
+    banir: {
+        description: 'Bane um servidor da lista de conexões.',
         execute: (message, args) => {
-            if (!args[0]) return message.channel.send('Por favor, forneça o ID do servidor.');
+            if (message.author.id !== OWNER_ID) {
+                return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
+            }
 
             const serverId = args[0];
-            if (bannedServers.includes(serverId)) {
-                return message.channel.send(`O servidor com ID ${serverId} já está banido.`);
+            if (!serverId) {
+                return message.channel.send('❗ Forneça o ID do servidor para banir.');
             }
 
-            bannedServers.push(serverId);
-            message.channel.send(`Servidor com ID ${serverId} banido com sucesso.`);
+            if (!bannedServers.includes(serverId)) {
+                bannedServers.push(serverId);
+                message.channel.send(`🚫 Servidor ${serverId} foi banido.`);
+                saveConnections();
+            } else {
+                message.channel.send('⚠️ Esse servidor já está banido.');
+            }
         },
     },
-    desbanirservidor: {
-        description: 'Desbane um servidor pelo ID.',
+    desbanir: {
+        description: 'Remove o banimento de um servidor.',
         execute: (message, args) => {
-            if (!args[0]) return message.channel.send('❌ Por favor, forneça o ID do servidor para desbanir.');
+            if (message.author.id !== OWNER_ID) {
+                return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
+            }
 
-    const serverId = args[0];
+            const serverId = args[0];
+            if (!serverId) {
+                return message.channel.send('❗ Forneça o ID do servidor para desbanir.');
+            }
 
-    if (!bannedServers.includes(serverId)) {
-        return message.channel.send('❌ Este servidor não está banido.');
+            const index = bannedServers.indexOf(serverId);
+            if (index !== -1) {
+                bannedServers.splice(index, 1);
+                message.channel.send(`✅ Servidor ${serverId} foi desbanido.`);
+                saveConnections();
+            } else {
+                message.channel.send('⚠️ Esse servidor não está banido.');
+            }
+        },
+    },
+};
+//parte 5
+// Quando o bot estiver online
+client.once(Events.ClientReady, () => {
+    console.log(`🌠 ${client.user.tag} está online`);
+    loadConnections();
+});
+
+// Ouve mensagens e verifica compartilhamentos globais
+client.on(Events.MessageCreate, async (message) => {
+    if (message.author.bot) return;
+
+    // Verificação de comandos
+    if (message.content.startsWith('!')) {
+        const args = message.content.slice(1).trim().split(/ +/);
+        const commandName = args.shift().toLowerCase();
+
+        const command = commands[commandName];
+
+        if (command) {
+            try {
+                await command.execute(message, args);
+            } catch (error) {
+                console.error(`Erro ao executar o comando: ${error}`);
+                message.channel.send('❗ Houve um erro ao executar esse comando.');
+            }
+        } else {
+            message.channel.send('❌ Comando não encontrado.');
+        }
     }
 
-    // Remove o servidor da lista de banidos
-    bannedServers = bannedServers.filter(id => id !== serverId);
-    saveConnections(); // Salva as alterações
+    // Compartilhamento global de mensagens
+    if (globalConnections.includes(message.channel.id)) {
+        for (const targetChannelId of globalConnections) {
+            if (targetChannelId !== message.channel.id) {
+                const targetChannel = await client.channels.fetch(targetChannelId);
+                if (targetChannel) {
+                    // Conteúdo da mensagem
+                    let embedDescription = message.content || "Mensagem sem conteúdo.";
+                    const embed = new EmbedBuilder()
+                        .setColor('#3498db')
+                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                        .setDescription(embedDescription)
+                        .setFooter({
+                            text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                        })
+                        .setTimestamp();
 
-    message.channel.send(`✅ O servidor com ID ${serverId} foi desbanido com sucesso.`);
-},
-// Comando !ajuda que mostra todos os comandos disponíveis
-commands.ajuda = {
-    description: 'Mostra a lista de comandos e suas descrições.',
-    execute: (message) => {
-        const commandList = Object.keys(commands).map((commandName, index) => {
-            return `**${index + 1}.** \`${commandName}\`: ${commands[commandName].description}`;
-        }).join('\n');
+                    await targetChannel.send({ embeds: [embed] });
 
-        const embed = new EmbedBuilder()
-            .setColor('#3498db')
-            .setTitle('🛠️ Lista de Comandos')
-            .setDescription(commandList)
-            .setFooter({
-                text: `🌠 Danny Barbosa | ${formatDateTime()} | [Servidor de suporte](https://discord.gg/c8a7Q45ddd)`,
-                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-            })
-            .setTimestamp();
+                    // Compartilhar anexos como links
+                    if (message.attachments.size > 0) {
+                        message.attachments.forEach(async (attachment) => {
+                            await targetChannel.send(`🖼️ Imagem compartilhada: ${attachment.url}`);
+                        });
+                    }
 
-        message.channel.send({ embeds: [embed] });
-    },
-};
+                    // Compartilhar áudio como link
+                    if (message.attachments.some(att => att.contentType.startsWith('audio'))) {
+                        message.attachments.forEach(async (attachment) => {
+                            await targetChannel.send(`🎶 Áudio compartilhado: ${attachment.url}`);
+                        });
+                    }
 
-// Comando para banir um servidor pelo ID
-commands.banir = {
-    description: 'Bane um servidor pelo ID.',
-    execute: (message, args) => {
-        if (!args[0]) return message.channel.send('❌ Por favor, forneça o ID do servidor para banir.');
+                    // Compartilhar figurinhas
+                    if (message.stickers.size > 0) {
+                        message.stickers.forEach(async (sticker) => {
+                            await targetChannel.send(`🖼️ Figurinha compartilhada: ${sticker.url}`);
+                        });
+                    }
 
-        const serverId = args[0];
-
-        if (bannedServers.includes(serverId)) {
-            return message.channel.send('❌ Este servidor já está banido.');
+                    // Emojis de outros servidores
+                    if (message.content.includes('<:')) {
+                        const emojis = message.content.match(/<:.+?:\d+>/g);
+                        if (emojis) {
+                            for (const emoji of emojis) {
+                                await targetChannel.send(`😄 Emoji compartilhado: ${emoji}`);
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        bannedServers.push(serverId);
-        saveConnections(); // Salva as alterações
+    // Compartilhamento de imagens através de links
+    if (message.attachments.size > 0) {
+        message.attachments.forEach(async (attachment) => {
+            if (attachment.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+                for (const targetChannelId of globalConnections) {
+                    if (targetChannelId !== message.channel.id) {
+                        const targetChannel = await client.channels.fetch(targetChannelId);
+                        if (targetChannel) {
+                            await targetChannel.send(`🖼️ Imagem compartilhada: ${attachment.url}`);
+                        }
+                    }
+                }
+            }
+        });
+    }
 
-        message.channel.send(`✅ O servidor com ID ${serverId} foi banido com sucesso.`);
-    },
-};
+    // Compartilhamento de figurinhas (stickers)
+    if (message.stickers.size > 0) {
+        message.stickers.forEach(async (sticker) => {
+            for (const targetChannelId of globalConnections) {
+                if (targetChannelId !== message.channel.id) {
+                    const targetChannel = await client.channels.fetch(targetChannelId);
+                    if (targetChannel) {
+                        await targetChannel.send(`🖼️ Figurinha compartilhada: ${sticker.url}`);
+                    }
+                }
+            }
+        });
+    }
+});
 
-// Envio de notificação para todos os servidores globais quando um novo servidor se conecta
-client.on(Events.GuildCreate, (guild) => {
-    const embed = new EmbedBuilder()
-        .setColor('#3498db')
-        .setTitle('🆕 Novo Servidor Conectado!')
-        .setDescription(`O servidor **${guild.name}** acabou de se conectar ao global!`)
-        .setFooter({
-            text: `🌠 Danny Barbosa | ${formatDateTime()} | [Servidor de suporte](https://discord.gg/c8a7Q45ddd)`,
-            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-        })
-        .setTimestamp();
-
-    globalConnections.forEach(async (channelId) => {
-        const channel = await client.channels.fetch(channelId);
-        if (channel) {
-            channel.send({ embeds: [embed] });
-        }
+// Parte 6
+client.login(TOKEN)
+    .then(() => {
+        console.log('Bot logado com sucesso!');
+    })
+    .catch(error => {
+        console.error('Erro ao logar o bot: ', error);
     });
-});
-
-// Envio de notificação quando um servidor se desconecta
-client.on(Events.GuildDelete, (guild) => {
-    const embed = new EmbedBuilder()
-        .setColor('#e74c3c')
-        .setTitle('🚪 Servidor Desconectado')
-        .setDescription(`O servidor **${guild.name}** foi desconectado do global.`)
-        .setFooter({
-            text: `🌠 Danny Barbosa | ${formatDateTime()} | [Servidor de suporte](https://discord.gg/c8a7Q45ddd)`,
-            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-        })
-        .setTimestamp();
-
-    globalConnections.forEach(async (channelId) => {
-        const channel = await client.channels.fetch(channelId);
-        if (channel) {
-            channel.send({ embeds: [embed] });
-        }
-        // Função para salvar as conexões e servidores banidos
-function saveConnections() {
-    const data = JSON.stringify({
-        channelConnections,
-        globalConnections,
-        bannedServers,
-    });
-    fs.writeFileSync('Salvamento.json', data);
-}
-
-// Envio de notificação quando um servidor se desconecta
-client.on(Events.GuildDelete, (guild) => {
-    const embed = new EmbedBuilder()
-        .setColor('#e74c3c')
-        .setTitle('❌ Servidor Desconectado')
-        .setDescription(`O servidor **${guild.name}** foi desconectado do global.`)
-        .setFooter({
-            text: `🌠 Danny Barbosa | ${formatDateTime()} | [Servidor de suporte](https://discord.gg/c8a7Q45ddd)`,
-            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-        })
-        .setTimestamp();
-
-    globalConnections.forEach(async (channelId) => {
-        const channel = await client.channels.fetch(channelId);
-        if (channel) {
-            channel.send({ embeds: [embed] });
-        }
-    });
-});
-
-// Salva as conexões quando o bot for encerrado
-client.on(Events.ClientDisconnect, () => {
-    saveConnections();
-});
-
-// Inicia o bot
-client.login(TOKEN);
-
-    });
-});
-
-// Salva as conexões quando o bot for encerrado
-client.on(Events.ClientDisconnect, () => {
-    saveConnections();
-});
-
-// Inicia o bot
-client.login(TOKEN);
+                        
