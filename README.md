@@ -19,9 +19,9 @@ Esses comandos e outras funcionalidades estão detalhados no código do bot.
 ## Executando o bot
 (Os dados de conexão são salvos em um arquivo `Salvamento.json` necessário para que o bot funcione.)
 
-No arquivo `index.js`, substitua o token do bot pela sua chave de autenticação que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
+No arquivo `Danny-BOT.js`, substitua o token do bot pela sua chave de autenticação que você obteve ao criar seu bot [aqui](https://discord.com/developers/applications).
 
-Você pode então executar o arquivo `index.js` enviando `node index.js` em uma janela de terminal. 
+Você pode então executar o arquivo `Danny-BOT.js` enviando `node Danny-BOT.js` em uma janela de terminal. 
 
 Certifique-se de que o Node.js e as dependências estão instalados, conforme indicado no guia de instalação.
 
