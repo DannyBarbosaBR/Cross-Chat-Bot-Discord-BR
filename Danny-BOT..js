@@ -117,7 +117,7 @@ const commands = {
         description: 'Conecta o canal atual a um canal mencionado de outro servidor. Uso: !conectar #canal',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-                return message.channel.send('Você não tem permissão para usar este comando.');
+                return message.channel.send('❌ Você não tem permissão para usar este comando.');
             }
 
             const targetChannel = message.mentions.channels.first();
@@ -278,7 +278,7 @@ function saveConnections() {
 client.on(Events.GuildDelete, (guild) => {
     const embed = new EmbedBuilder()
         .setColor('#e74c3c')
-        .setTitle('🚪 Servidor Desconectado')
+        .setTitle('❌ Servidor Desconectado')
         .setDescription(`O servidor **${guild.name}** foi desconectado do global.`)
         .setFooter({
             text: `🌠 Danny Barbosa | ${formatDateTime()} | [Servidor de suporte](https://discord.gg/c8a7Q45ddd)`,
