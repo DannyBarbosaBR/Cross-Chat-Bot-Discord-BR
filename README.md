@@ -40,10 +40,26 @@ Para executar o bot no Termux (Android e PC), baixe em:
    pkg install nodejs
    pkg install git
    npm install discord.js node-fetch dotenv
+3. **Inicie o BOt** e execute os seguinte comando para executar o bot
+   
+ node Danny-BOT.js
 
-### Vídeos Que me ajudarem!
+### Vídeos que me ajudarem!
 - [Como configurar um bot no Discord](https://youtu.be/f9Mr6_k8KRI?si=7pftL5mxuWA8qYrD): Este vídeo oferece um passo a passo sobre como configurar um bot no Discord, desde a criação até a execução.
 - [Tutorial de instalação e execução de bots no Discord](https://youtu.be/4-aVu1_w18Y?si=uaQSjhGAJS1KrAWM): Aqui você encontrará informações detalhadas sobre como instalar e executar bots no Discord, ideal para iniciantes.
-   
+
+## Editores de Código
+
+### Visual Studio Code (PC)
+Para editar o código do bot, recomendo usar o **Visual Studio Code**. É um editor de código poderoso e fácil de usar. Para baixar, visite:
+- [Download Visual Studio Code](https://code.visualstudio.com/)
+
+Com o Visual Studio Code, você pode abrir o projeto, editar os arquivos e instalar extensões úteis, como o **Prettier** para formatação de código e o **ESLint** para linting.
+
+### Editor para Android
+Se você preferir editar o código diretamente no seu dispositivo Android, recomendo o aplicativo **AIDE**. Ele é uma IDE (Ambiente de Desenvolvimento Integrado) que permite editar e compilar código diretamente no seu celular. Baixe o AIDE em:
+- [AIDE para Android](https://play.google.com/store/apps/details?id=com.alif.ide)
+
+Embora o AIDE não tenha todos os recursos de um IDE de desktop, ele oferece funcionalidades básicas para edição de código e é prático para fazer alterações rápidas.
 
 Se precisar de ajuda com as configurações, sinta-se à vontade para me contatar no Discord: **@dannybarbosabr**.
