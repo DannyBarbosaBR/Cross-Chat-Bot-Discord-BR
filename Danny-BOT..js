@@ -114,7 +114,7 @@ const commands = {
         },
     },
     conectar: {
-        description: 'Conecta o canal atual a um canal mencionado de outro servidor. Uso: !conectar #canal',
+        description: 'Conecta um chat do servidor local a um canal mencionado. Uso: !conectar #canal',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
                 return message.channel.send('❌ Você não tem permissão para usar este comando.');
