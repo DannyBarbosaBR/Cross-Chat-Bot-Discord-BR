@@ -1,3 +1,5 @@
+já//parte 1
+//  essas linhas
 import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import fs from 'fs';
@@ -5,10 +7,10 @@ import fs from 'fs';
 // Carregue suas variáveis de ambiente
 config();
 
-const TOKEN = ''; // Coloque seu token aqui
-const CLIENT_SECRET = ''; // Adicione o CLIENT_SECRET aqui
-const WEBHOOK_URL = ''; // Coloque seu URL do Webhook aqui
-const OWNER_ID = ''; // Coloque o seu ID de usuário aqui
+const TOKEN = process.env.TOKEN;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
+const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
 let channelConnections = {};
 let globalConnections = [];
@@ -17,21 +19,19 @@ let bannedServers = [];
 // Crie uma nova instância do cliente Discord
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds, // Permite que o bot veja informações dos servidores
-        GatewayIntentBits.GuildMessages, // Para receber mensagens de guildas
-        GatewayIntentBits.MessageContent, // Para ler o conteúdo das mensagens
-        GatewayIntentBits.GuildMembers, // Para informações de membros
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
     ],
 });
-
+//parte 2
 // Função para carregar conexões
-
 function loadConnections() {
     if (fs.existsSync('Salvamento.json')) {
         try {
             const data = fs.readFileSync('Salvamento.json', 'utf8');
             if (data.trim().length === 0) {
-                // Se o arquivo estiver vazio, inicialize com dados padrão
                 channelConnections = {};
                 globalConnections = [];
                 bannedServers = [];
@@ -43,7 +43,6 @@ function loadConnections() {
             }
         } catch (error) {
             console.error("Erro ao carregar conexões: ", error);
-            // Inicialize com dados padrão em caso de erro
             channelConnections = {};
             globalConnections = [];
             bannedServers = [];
@@ -55,7 +54,7 @@ function loadConnections() {
 function saveConnections() {
     fs.writeFileSync('Salvamento.json', JSON.stringify({ channelConnections, globalConnections, bannedServers }));
 }
-
+//parte 3
 // Função que formata a data e hora corretamente
 function formatDateTime() {
     const now = new Date();
@@ -63,8 +62,8 @@ function formatDateTime() {
     const date = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
     return `🕘 ${date} | 🗓️ ${hours}`;
 }
-
-// Comandos
+//parte 4
+//parte 4
 const commands = {
     criador: {
         description: 'Mostra quem é o criador do bot',
@@ -84,7 +83,7 @@ const commands = {
         description: 'Mostra todos os servidores conectados',
         execute: (message) => {
             const serverCount = client.guilds.cache.size;
-            const serverList = client.guilds.cache.map(guild => guild.name).join('\n');
+            const serverList = client.guilds.cache.map(guild => `${guild.name} (ID: ${guild.id})`).join('\n');
 
             const embed = new EmbedBuilder()
                 .setColor('#3498db')
@@ -136,6 +135,30 @@ const commands = {
 
             message.channel.send(`🔗 Canal <#${message.channel.id}> conectado ao canal <#${targetChannel.id}>.`);
             saveConnections();
+        },
+    },
+    desconectar: {
+        description: 'Desconecta o canal atual de um canal mencionado de outro servidor. Uso: !desconectar #canal',
+        execute: (message) => {
+            if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
+                return message.channel.send('❌ Você não tem permissão para usar este comando.');
+            }
+
+            const targetChannel = message.mentions.channels.first();
+            if (!targetChannel) {
+                return message.channel.send('❗ Por favor, mencione um canal para desconectar.');
+            }
+
+            const channelList = channelConnections[message.guild.id] || [];
+            const index = channelList.findIndex(conn => conn.targetChannelId === targetChannel.id && conn.sourceChannelId === message.channel.id);
+
+            if (index !== -1) {
+                channelList.splice(index, 1);
+                message.channel.send(`🔗 Canal <#${message.channel.id}> desconectado do canal <#${targetChannel.id}>.`);
+                saveConnections();
+            } else {
+                message.channel.send('⚠️ Este canal não está conectado ao canal mencionado.');
+            }
         },
     },
     ajuda: {
@@ -199,7 +222,8 @@ const commands = {
     },
 };
 
-// Quando o bot estiver online
+// parte 5
+// parte 5
 client.once(Events.ClientReady, () => {
     console.log(`🌠 ${client.user.tag} está online`);
     loadConnections();
@@ -236,17 +260,26 @@ client.on(Events.MessageCreate, async (message) => {
                 if (targetChannel) {
                     // Conteúdo da mensagem
                     let embedDescription = message.content || "Mensagem sem conteúdo.";
-                                       const embed = new EmbedBuilder()
+                    const embed = new EmbedBuilder()
                         .setColor('#3498db')
                         .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
                         .setDescription(embedDescription)
                         .setFooter({
-                            text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                            text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
                             iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
                         })
                         .setTimestamp();
 
                     await targetChannel.send({ embeds: [embed] });
+
+                    // Responder a mensagem original mencionando o autor
+                    if (message.reference && message.reference.messageId) {
+                        const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
+                        if (originalMessage) {
+                            const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
+                            await targetChannel.send({ content: replyContent, messageReference: { messageId: originalMessage.id } });
+                        }
+                    }
 
                     // Compartilhar anexos como links
                     if (message.attachments.size > 0) {
@@ -314,5 +347,11 @@ client.on(Events.MessageCreate, async (message) => {
     }
 });
 
-// Login do bot
-client.login(TOKEN);
+// Parte 6
+client.login(process.env.TOKEN)
+    .then(() => {
+        console.log('Bot logado com sucesso!');
+    })
+    .catch(error => {
+        console.error('Erro ao logar o bot: ', error);
+    });
