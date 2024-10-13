@@ -86,7 +86,7 @@ Para executar o bot no Termux (Android e PC), baixe em:
    termux-setup-storage
    //da acesso a armazenamento 
    cd /mnt
-   //abre diretórios do dispositivo
+   //abre diretórios do
 3. **Inicie o BOt** e execute os seguinte comando para executar o bot
    
  `node Danny-BOT.js`
