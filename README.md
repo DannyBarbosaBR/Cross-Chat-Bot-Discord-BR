@@ -82,9 +82,11 @@ Para executar o bot no Termux (Android e PC), baixe em:
    pkg install nodejs
    pkg install git
    npm install discord.js node-fetch dotenv
-   //Outros:
+   //Outros comandos:
    termux-setup-storage
-   cd /mnt 
+   //da acesso a armazenamento 
+   cd /mnt
+   //Abre arquivos 
 3. **Inicie o BOt** e execute os seguinte comando para executar o bot
    
  `node Danny-BOT.js`
