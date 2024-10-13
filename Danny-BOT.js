@@ -170,7 +170,7 @@ const commands = {
 },
 
     conectar: {
-        description: 'Conecta o canal atual a um outro do servidor',
+        description: 'Conecta o canal a um outro do servidor',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
                 return message.channel.send('❌ Você não tem permissão para usar este comando.');
