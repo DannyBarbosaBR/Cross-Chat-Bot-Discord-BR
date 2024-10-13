@@ -6,7 +6,7 @@ import fs from 'fs';
 // Carregue suas variáveis de ambiente
 config();
 
-const TOKEN = '-';
+const TOKEN = '';
 const CLIENT_SECRET = ''; // Adicione o CLIENT_SECRET aqui
 const WEBHOOK_URL = ''; // Coloque seu URL do Webhook aqui
 const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
@@ -73,6 +73,7 @@ const dchatRules = `
 
 Qualquer dúvida? Junte-se ao nosso [servidor de suporte](https://discord.gg/8DhUA4HNpD).
 `;
+
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
 const commands = {
     criador: {
@@ -169,7 +170,7 @@ const commands = {
 },
 
     conectar: {
-        description: 'Conecta o canal atual a um canal mencionado de outro servidor. Uso: !conectar #canal',
+        description: 'Conecta o canal atual a um outro do servidor',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
                 return message.channel.send('❌ Você não tem permissão para usar este comando.');
@@ -369,6 +370,7 @@ client.on(Events.MessageCreate, async (message) => {
     }
 });
 
+
 // Parte 6 final
 client.login(TOKEN)
     .then(() => {
@@ -377,5 +379,4 @@ client.login(TOKEN)
     .catch(error => {
         console.error('Erro ao logar o bot: ', error);
     });
-
-        
+            
