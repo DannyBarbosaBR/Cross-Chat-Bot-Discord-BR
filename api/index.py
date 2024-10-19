@@ -7,10 +7,10 @@ app = Flask(__name__)
 
 # URLs dos webhooks dos servidores (substitua com seus webhooks reais)
 WEBHOOK_URLS = {
-    'server_a': 'https://discord.com/api/webhooks/1292800072379011072/MILo8fEE3rB7fKErdIM5CbYObHtGCYQ8fOGhrQfLboeoUcB_pMmLQWqQlvSUQgHHOwSn',  # Webhook do Servidor A
-    'server_b': 'https://discord.com/api/webhooks/1296998218772647968/LnqyXkeEsGsAmkBFy4ZibLvxfftwZ0cizyzZfw1erI9PcJOxurIy1nOPOrYJ02shkIDX',  # Webhook do Servidor B
+    'server_a': 'https://discord.com/api/webhooks/1292800072379011072/MILo8fEE3rB7fKErdIM5CbYObHtGCYQ8fOGhrQfLboeoUcB_pMmLQWqQlvSUQgHHOwSn',
+    'server_b': 'https://discord.com/api/webhooks/1296998218772647968/LnqyXkeEsGsAmkBFy4ZibLvxfftwZ0cizyzZfw1erI9PcJOxurIy1nOPOrYJ02shkIDX',
     'server_c': 'https://discord.com/api/webhooks/...',  # Substitua com seu webhook do Servidor C
-    'server_d': 'https://discord.com/api/webhooks/...'   # Substitua com seu webhook do Servidor D
+    'server_d': 'https://discord.com/api/webhooks/...',  # Substitua com seu webhook do Servidor D
 }
 
 # Recebe mensagens de um servidor e as envia para os outros
