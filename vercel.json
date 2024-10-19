@@ -11,4 +11,5 @@
       "src": "/webhook/(.*)",
       "dest": "api/index.py"
     }
- 
+  ]
+}
