@@ -1,7 +1,7 @@
 {
     "name": "discord-webhook-relay",
     "version": "1.0.0",
-    "main": "index.js", // Certifique-se de que este caminho está correto
+    "main": "index.js", 
     "scripts": {
         "start": "node index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
