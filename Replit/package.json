@@ -1,14 +1,18 @@
 {
-  "name": "Danny-bot",
+  "name": "Danny-BOT",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Bot do Discord Danny-BOT",
   "main": "Danny-BOT.js",
+  "type": "module",
   "scripts": {
     "start": "node Danny-BOT.js"
   },
   "dependencies": {
     "discord.js": "^14.0.0",
-    "node-fetch": "^3.0.0",
-    "dotenv": "^10.0.0"
-  }
+    "dotenv": "^16.4.5",
+    "node": "^20.0.0",
+    "node-fetch": "^3.0.0"
+  },
+  "author": "Danny Barbosa",
+  "license": "ISC"
 }
