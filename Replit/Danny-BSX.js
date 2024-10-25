@@ -1,4 +1,4 @@
-já//parte 1
+//parte 1
 //  essas linhas
 import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
