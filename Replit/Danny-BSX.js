@@ -1,5 +1,4 @@
-//parte 1
-//  essas linhas
+//parte 1 Inicialização e configuração do cliente.
 import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import fs from 'fs';
@@ -25,7 +24,7 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
     ],
 });
-//parte 2
+//parte 2 Funções para carregar e salvar conexões.
 // Função para carregar conexões
 function loadConnections() {
     if (fs.existsSync('Salvamento.json')) {
@@ -54,7 +53,7 @@ function loadConnections() {
 function saveConnections() {
     fs.writeFileSync('Salvamento.json', JSON.stringify({ channelConnections, globalConnections, bannedServers }));
 }
-//parte 3
+//parte 3 Funções utilitárias, como formatação de data e regras do servidor
 // Função que formata a data e hora corretamente
 function formatDateTime() {
     const now = new Date();
@@ -62,8 +61,20 @@ function formatDateTime() {
     const date = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
     return `🕘 ${date} | 🗓️ ${hours}`;
 }
-//parte 4
-//parte 4
+// Regras do Danny-Chat
+const dchatRules = `
+1. **Use o bom senso:** Seja considerado com os outros e suas opiniões. Sem ofensas, linguagem extrema ou qualquer ação que possa perturbar o conforto do chat.
+2. **Sem spam ou flooding:** Evite mensagens repetidas, sem sentido ou excessivamente longas.
+3. **Mantenha assuntos privados:** Evite compartilhar informações pessoais na rede.
+4. **Sem assédio:** Trolling, insultos ou assédio de qualquer tipo não serão tolerados.
+5. **Sem conteúdo NSFW/NSFL:** Postar conteúdo NSFW/NSFL explícito resultará em banimento imediato.
+6. **Respeite tópicos sensíveis:** Não trivialize automutilação, suicídio, violência ou outros tópicos ofensivos.
+7. **Reporte preocupações:** Se você observar uma violação dessas regras, reporte ao moderador do hub apropriado ou à equipe do Danny-Chat para ação adicional.
+
+Qualquer dúvida? Junte-se ao nosso [servidor de suporte](https://discord.gg/8DhUA4HNpD).
+`;
+
+//parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
 const commands = {
     criador: {
         description: 'Mostra quem é o criador do bot',
@@ -94,26 +105,72 @@ const commands = {
                 })
                 .setTimestamp();
             message.channel.send({ embeds: [embed] });
-        },
+        }, // Corrigido: removeu o ponto e vírgula aqui
     },
     global: {
-        description: 'Conecta o canal atual a outros canais globais.',
-        execute: (message) => {
-            if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-                return message.channel.send('❌ Você não tem permissão para usar este comando.');
-            }
+    description: 'Conecta o canal atual a outros canais globais.',
+    execute: async (message) => {
+        if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
+            return message.channel.send('❌ Você não tem permissão para usar este comando.');
+        }
 
-            if (globalConnections.includes(message.channel.id)) {
-                return message.channel.send('🔗 Este canal já está conectado globalmente.');
-            }
+        if (globalConnections.includes(message.channel.id)) {
+            return message.channel.send('🔗 Este canal já está conectado globalmente.');
+        }
 
-            globalConnections.push(message.channel.id);
-            message.channel.send(`🌐 Canal <#${message.channel.id}> conectado globalmente.`);
-            saveConnections();
-        },
+        globalConnections.push(message.channel.id);
+        message.channel.send(`🌐 Canal <#${message.channel.id}> conectado globalmente.`);
+
+        const embedRules = new EmbedBuilder()
+            .setColor('#3498db')
+            .setTitle('📜 Regras do Danny-Chat')
+            .setDescription(dchatRules)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        message.channel.send({ embeds: [embedRules] });
+
+        const numberOfConnections = globalConnections.length;
+        const notificationEmbed = new EmbedBuilder()
+            .setColor('#3498db')
+            .setTitle('🌐 Novo Servidor Conectado')
+            .setDescription(`O servidor **${message.guild.name}** entrou na conexão! Agora temos **${numberOfConnections}** servidores conectados.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        // Verifica se os canais existem antes de enviar a mensagem
+        const validChannels = [];
+        for (const channelId of globalConnections) {
+            try {
+                const channel = await client.channels.fetch(channelId);
+                validChannels.push(channel); // Armazena canais válidos
+            } catch (error) {
+                console.log(`Canal ${channelId} não encontrado, removendo da lista de conexões.`);
+                globalConnections = globalConnections.filter(id => id !== channelId); // Remove o canal da lista
+            }
+        }
+
+        // Envia a mensagem apenas para canais válidos
+        for (const channel of validChannels) {
+            try {
+                await channel.send({ embeds: [notificationEmbed] });
+            } catch (err) {
+                console.log(`Erro ao enviar mensagem para o canal ${channel.id}: ${err.message}`);
+            }
+        }
+
+        saveConnections();
     },
+},
+
     conectar: {
-        description: 'Conecta o canal atual a um canal mencionado de outro servidor. Uso: !conectar #canal',
+        description: 'Conecta o canal a um outro do servidor',
         execute: (message) => {
             if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
                 return message.channel.send('❌ Você não tem permissão para usar este comando.');
@@ -137,30 +194,26 @@ const commands = {
             saveConnections();
         },
     },
+    // Comando !descontar - Desconecta o canal atual da conexão ativa.
     desconectar: {
-        description: 'Desconecta o canal atual de um canal mencionado de outro servidor. Uso: !desconectar #canal',
-        execute: (message) => {
-            if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-                return message.channel.send('❌ Você não tem permissão para usar este comando.');
-            }
+    description: 'Desconecta um canal conectado.',
+    async execute(message) {
+        const channelId = message.channel.id;
 
-            const targetChannel = message.mentions.channels.first();
-            if (!targetChannel) {
-                return message.channel.send('❗ Por favor, mencione um canal para desconectar.');
-            }
+        // Verifica se o canal está na lista de conexões globais
+        if (!globalConnections.includes(channelId)) {
+            return message.channel.send('❌ Este canal não está conectado globalmente.');
+        }
 
-            const channelList = channelConnections[message.guild.id] || [];
-            const index = channelList.findIndex(conn => conn.targetChannelId === targetChannel.id && conn.sourceChannelId === message.channel.id);
-
-            if (index !== -1) {
-                channelList.splice(index, 1);
-                message.channel.send(`🔗 Canal <#${message.channel.id}> desconectado do canal <#${targetChannel.id}>.`);
-                saveConnections();
-            } else {
-                message.channel.send('⚠️ Este canal não está conectado ao canal mencionado.');
-            }
-        },
+        // Remove o canal da lista de conexões globais
+        globalConnections = globalConnections.filter(id => id !== channelId);
+        message.channel.send(`🔌 Canal <#${channelId}> desconectado com sucesso.`);
+        
+        // Salva as conexões após a desconexão
+        saveConnections();
     },
+},
+    
     ajuda: {
         description: 'Mostra todos os comandos disponíveis.',
         execute: (message) => {
@@ -222,8 +275,8 @@ const commands = {
     },
 };
 
-// parte 5
-// parte 5
+
+/// Parte 5Gerenciamento de eventos e compartilhamento de mensagens
 client.once(Events.ClientReady, () => {
     console.log(`🌠 ${client.user.tag} está online`);
     loadConnections();
@@ -315,40 +368,11 @@ client.on(Events.MessageCreate, async (message) => {
             }
         }
     }
-
-    // Compartilhamento de imagens através de links
-    if (message.attachments.size > 0) {
-        message.attachments.forEach(async (attachment) => {
-            if (attachment.url.match(/\.(jpeg|jpg|gif|png)$/)) {
-                for (const targetChannelId of globalConnections) {
-                    if (targetChannelId !== message.channel.id) {
-                        const targetChannel = await client.channels.fetch(targetChannelId);
-                        if (targetChannel) {
-                            await targetChannel.send(`🖼️ Imagem compartilhada: ${attachment.url}`);
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Compartilhamento de figurinhas (stickers)
-    if (message.stickers.size > 0) {
-        message.stickers.forEach(async (sticker) => {
-            for (const targetChannelId of globalConnections) {
-                if (targetChannelId !== message.channel.id) {
-                    const targetChannel = await client.channels.fetch(targetChannelId);
-                    if (targetChannel) {
-                        await targetChannel.send(`🖼️ Figurinha compartilhada: ${sticker.url}`);
-                    }
-                }
-            }
-        });
-    }
 });
 
-// Parte 6
-client.login(process.env.TOKEN)
+
+// Parte 6 final
+client.login(TOKEN)
     .then(() => {
         console.log('Bot logado com sucesso!');
     })
