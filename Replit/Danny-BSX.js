@@ -83,7 +83,7 @@ const dchatRules = `
 6. **Respeite tópicos sensíveis:** Não trivialize automutilação, suicídio, violência ou outros tópicos ofensivos.
 7. **Reporte preocupações:** Se você observar uma violação dessas regras, reporte ao moderador do hub apropriado ou à equipe do Danny-Chat para ação adicional.
 
-Qualquer dúvida? Junte-se ao nosso [servidor de suporte](https://discord.gg/8DhUA4HNpD).
+Qualquer dúvida? Junte-se ao nosso [servidor de suporte](https://discord.gg/8GWFWNmjTa).
 `;
 
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
@@ -92,8 +92,9 @@ const commands = {
         description: 'Mostra quem é o criador do bot',
         execute: (message) => {
             const embed = new EmbedBuilder()
-                .setColor('#3498db')
-                .setDescription('🌟 Criado por <@1067849662347878401> ! [Acesse o servidor de suporte](https://discord.gg/c8a7Q45ddd) 😎')
+                .setColor('#800080')
+                .setTitle('🌠 Danny Barbosa')
+                .setDescription('🌟 Criado por <@1067849662347878401> ! \n [Acesse o Github do projeto!](https://github.com/DannyBarbosaBR/Cross-Chat-Bot-Discord-BR/) 😎')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -109,8 +110,9 @@ const commands = {
             const serverList = client.guilds.cache.map(guild => `${guild.name} (ID: ${guild.id})`).join('\n');
 
             const embed = new EmbedBuilder()
-                .setColor('#3498db')
-                .setDescription(`🌍 Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/c8a7Q45ddd)`)
+                .setColor('#2E8B57')
+                .setTitle('🌍 Serviddores Globlais')
+                .setDescription(`Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/8GWFWNmjTa)`)
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -134,7 +136,7 @@ const commands = {
         message.channel.send(`🌐 Canal <#${message.channel.id}> conectado globalmente.`);
 
         const embedRules = new EmbedBuilder()
-            .setColor('#3498db')
+            .setColor('#FFFF00')
             .setTitle('📜 Regras do Danny-Chat')
             .setDescription(dchatRules)
             .setFooter({
@@ -147,9 +149,9 @@ const commands = {
 
         const numberOfConnections = globalConnections.length;
         const notificationEmbed = new EmbedBuilder()
-            .setColor('#3498db')
+            .setColor('#00FF00')
             .setTitle('🌐 Novo Servidor Conectado')
-            .setDescription(`O servidor **${message.guild.name}** entrou na conexão! Agora temos **${numberOfConnections}** servidores conectados.`)
+            .setDescription(`O servidor **${message.guild.name}** entrou na conexão! \n Agora temos **${numberOfConnections}** servidores conectados.`)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
