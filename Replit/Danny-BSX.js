@@ -3,6 +3,18 @@ import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import fs from 'fs';
 
+// Manter o bot ativo no Replit
+import express from 'express';
+const app = express();
+
+// Cria uma rota simples para manter o bot online
+app.get('/', (req, res) => res.send('O bot está rodando!'));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor HTTP rodando na porta ${PORT}`);
+});
+
 // Carregue suas variáveis de ambiente
 config();
 
