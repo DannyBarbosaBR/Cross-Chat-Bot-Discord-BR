@@ -103,6 +103,40 @@ const commands = {
             message.channel.send({ embeds: [embed] });
         },
     },
+    horário: {
+        description: 'Mostra o horário do dia atual.',
+        execute: (message) => {
+            const hoje = new Date();
+            const diasDaSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const diaAtual = diasDaSemana[hoje.getDay()]; // Obtém o dia da semana atual
+
+            const horarios = {
+                Domingo: '14:00 - 21:00',
+                Segunda: '19:00 - 22:00',
+                Terça: '19:00 - 22:00',
+                Quarta: '19:00 - 22:00',
+                Quinta: '19:00 - 22:00',
+                Sexta: 'Fora de horário',
+                Sábado: '14:00 - 21:00',
+            };
+
+            const horarioHoje = horarios[diaAtual]; // Obtém o horário do dia atual
+
+            const resposta = `🕘 **Horário de Atividade para Hoje: \n(${diaAtual}):** ${horarioHoje}`;
+
+            const embed = new EmbedBuilder()
+                .setColor('#FFC0CB')
+                .setTitle('📅 Horário de Atividade')
+                .setDescription(resposta)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            message.channel.send({ embeds: [embed] });
+        },
+    },
     servidores: {
         description: 'Mostra todos os servidores conectados',
         execute: (message) => {
@@ -439,31 +473,4 @@ if (message.reference && message.reference.messageId) {
                     // Compartilhar figurinhas
                     if (message.stickers.size > 0) {
                         message.stickers.forEach(async (sticker) => {
-                            await targetChannel.send(`🖼️ Figurinha compartilhada: ${sticker.url}`);
-                        });
-                    }
-
-                    // Emojis de outros servidores
-                    if (message.content.includes('<:')) {
-                        const emojis = message.content.match(/<:.+?:\d+>/g);
-                        if (emojis) {
-                            for (const emoji of emojis) {
-                                await targetChannel.send(`😄 Emoji compartilhado: ${emoji}`);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-});
-
-
-// Parte 6 final
-client.login(TOKEN)
-    .then(() => {
-        console.log('Bot logado com sucesso!');
-    })
-    .catch(error => {
-        console.error('Erro ao logar o bot: ', error);
-    });
+                          
