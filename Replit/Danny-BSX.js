@@ -93,7 +93,7 @@ const commands = {
         execute: (message) => {
             const embed = new EmbedBuilder()
                 .setColor('#3498db')
-                .setDescription('🌟 Criado por Danny Barbosa! [Acesse o servidor de suporte](https://discord.gg/c8a7Q45ddd) 😎')
+                .setDescription('🌟 Criado por <@1067849662347878401> ! [Acesse o servidor de suporte](https://discord.gg/c8a7Q45ddd) 😎')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -120,7 +120,7 @@ const commands = {
         }, // Corrigido: removeu o ponto e vírgula aqui
     },
     global: {
-    description: 'Conecta o canal atual a outros canais globais.',
+    description: 'Conecta o canal atual a outros servidores.',
     execute: async (message) => {
         if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
             return message.channel.send('❌ Você não tem permissão para usar este comando.');
