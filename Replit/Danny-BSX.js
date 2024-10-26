@@ -151,7 +151,7 @@ const commands = {
         const notificationEmbed = new EmbedBuilder()
             .setColor('#00FF00')
             .setTitle('🌐 Novo Servidor Conectado')
-            .setDescription(`O servidor **${message.guild.name}** entrou na conexão! \n Agora temos **${numberOfConnections}** servidores conectados.`)
+            .setDescription(`O servidor **${message.guild.name}** entrou na conexão! \nAgora temos **${numberOfConnections}** servidores conectados.`)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -229,8 +229,8 @@ desconectar: {
         // Notificação de desconexão para os canais conectados
         const disconnectEmbed = new EmbedBuilder()
             .setColor('#FF0000') // Vermelho para desconexão
-            .setTitle('🔌 Canal Desconectado')
-            .setDescription(`O canal <#${channelId}> foi desconectado.`)
+            .setTitle('🔌 Desconectado da Conexão')
+            .setDescription(`O canal <#${channelId}> do **${message.guild.name}** foi desconectado.`)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -454,7 +454,7 @@ client.on(Events.MessageCreate, async (message) => {
 // Parte 6 final
 client.login(TOKEN)
     .then(() => {
-      console.log('Bot logado com sucesso!');
+        console.log('Bot logado com sucesso!');
     })
     .catch(error => {
         console.error('Erro ao logar o bot: ', error);
