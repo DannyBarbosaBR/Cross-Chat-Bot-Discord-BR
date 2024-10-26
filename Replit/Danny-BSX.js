@@ -209,7 +209,7 @@ const commands = {
         },
     },
     // Comando !descontar - Desconecta o canal atual da conexão ativa.
-    desconectar: {
+desconectar: {
     description: 'Desconecta um canal conectado.',
     async execute(message) {
         const channelId = message.channel.id;
@@ -225,6 +225,27 @@ const commands = {
         
         // Salva as conexões após a desconexão
         saveConnections();
+
+        // Notificação de desconexão para os canais conectados
+        const disconnectEmbed = new EmbedBuilder()
+            .setColor('#FF0000') // Vermelho para desconexão
+            .setTitle('🔌 Canal Desconectado')
+            .setDescription(`O canal <#${channelId}> foi desconectado.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        // Envia a notificação para todos os canais conectados
+        for (const id of globalConnections) {
+            try {
+                const channel = await client.channels.fetch(id);
+                await channel.send({ embeds: [disconnectEmbed] });
+            } catch (err) {
+                console.log(`Erro ao enviar mensagem para o canal ${id}: ${err.message}`);
+            }
+        }
     },
 },
     
@@ -244,47 +265,92 @@ const commands = {
             message.channel.send({ embeds: [embed] });
         },
     },
-    banir: {
-        description: 'Bane um servidor da lista de conexões.',
-        execute: (message, args) => {
-            if (message.author.id !== OWNER_ID) {
-                return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
-            }
+    
+    //modificacao
+banir: {
+    description: 'Bane um servidor da lista de conexões.',
+    execute: async (message, args) => {
+        if (message.author.id !== OWNER_ID) {
+            return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
+        }
 
-            const serverId = args[0];
-            if (!serverId) {
-                return message.channel.send('❗ Forneça o ID do servidor para banir.');
-            }
+        const serverId = args[0];
+        if (!serverId) {
+            return message.channel.send('❗ Forneça o ID do servidor para banir.');
+        }
 
-            if (!bannedServers.includes(serverId)) {
-                bannedServers.push(serverId);
-                message.channel.send(`🚫 Servidor ${serverId} foi banido.`);
-                saveConnections();
-            } else {
-                message.channel.send('⚠️ Esse servidor já está banido.');
+        if (!bannedServers.includes(serverId)) {
+            bannedServers.push(serverId);
+            message.channel.send(`🚫 Servidor ${serverId} foi banido.`);
+            saveConnections();
+
+            // Notificação de banimento
+            const banEmbed = new EmbedBuilder()
+                .setColor('#FF0000') // Vermelho para banimento
+                .setTitle('🚫 Servidor Banido')
+                .setDescription(`O servidor **${serverId}** foi banido da conexão.`)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            // Envia a notificação para todos os canais conectados
+            for (const channelId of globalConnections) {
+                try {
+                    const channel = await client.channels.fetch(channelId);
+                    await channel.send({ embeds: [banEmbed] });
+                } catch (err) {
+                    console.log(`Erro ao enviar mensagem para o canal ${channelId}: ${err.message}`);
+                }
             }
-        },
+        } else {
+            message.channel.send('⚠️ Esse servidor já está banido.');
+        }
     },
-    desbanir: {
-        description: 'Remove o banimento de um servidor.',
-        execute: (message, args) => {
-            if (message.author.id !== OWNER_ID) {
-                return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
-            }
+},
 
-            const serverId = args[0];
-            if (!serverId) {
-                return message.channel.send('❗ Forneça o ID do servidor para desbanir.');
-            }
+desbanir: {
+    description: 'Remove o banimento de um servidor.',
+    execute: async (message, args) => {
+        if (message.author.id !== OWNER_ID) {
+            return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
+        }
 
-            const index = bannedServers.indexOf(serverId);
-            if (index !== -1) {
-                bannedServers.splice(index, 1);
-                message.channel.send(`✅ Servidor ${serverId} foi desbanido.`);
-                saveConnections();
-            } else {
-                message.channel.send('⚠️ Esse servidor não está banido.');
+        const serverId = args[0];
+        if (!serverId) {
+            return message.channel.send('❗ Forneça o ID do servidor para desbanir.');
+        }
+
+        const index = bannedServers.indexOf(serverId);
+        if (index !== -1) {
+            bannedServers.splice(index, 1);
+            message.channel.send(`✅ Servidor ${serverId} foi desbanido.`);
+            saveConnections();
+
+            // Notificação de desbanimento
+            const unbanEmbed = new EmbedBuilder()
+                .setColor('#00FF00') // Verde para desbanimento
+                .setTitle('✅ Servidor Desbanido')
+                .setDescription(`O servidor **${serverId}** foi desbanido e pode se reconectar.`)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            // Envia a notificação para todos os canais conectados
+            for (const channelId of globalConnections) {
+                try {
+                    const channel = await client.channels.fetch(channelId);
+                    await channel.send({ embeds: [unbanEmbed] });
+                } catch (err) {
+                    console.log(`Erro ao enviar mensagem para o canal ${channelId}: ${err.message}`);
+                }
             }
+        } else {
+            message.channel.send('⚠️ Esse servidor não está banido.');
+               }
         },
     },
 };
@@ -388,7 +454,7 @@ client.on(Events.MessageCreate, async (message) => {
 // Parte 6 final
 client.login(TOKEN)
     .then(() => {
-        console.log('Bot logado com sucesso!');
+      console.log('Bot logado com sucesso!');
     })
     .catch(error => {
         console.error('Erro ao logar o bot: ', error);
