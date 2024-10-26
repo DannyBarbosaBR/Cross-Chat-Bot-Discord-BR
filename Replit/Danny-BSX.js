@@ -104,7 +104,7 @@ const commands = {
         },
     },
     horário: {
-        description: 'Mostra o horário do dia atual.',
+        description: 'Mostra o horário de funcionamento atual.',
         execute: (message) => {
             const hoje = new Date();
             const diasDaSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -126,7 +126,7 @@ const commands = {
 
             const embed = new EmbedBuilder()
                 .setColor('#FFC0CB')
-                .setTitle('📅 Horário de Atividade')
+                .setTitle('📅 Horário de Funcionamento')
                 .setDescription(resposta)
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
