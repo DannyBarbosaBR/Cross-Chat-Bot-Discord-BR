@@ -111,7 +111,7 @@ const commands = {
             const diaAtual = diasDaSemana[hoje.getDay()]; // Obtém o dia da semana atual
 
             const horarios = {
-                Domingo: '14:00 - 21:00',
+                Domingo: 'Fora de horário',
                 Segunda: '19:00 - 22:00',
                 Terça: '19:00 - 22:00',
                 Quarta: '19:00 - 22:00',
@@ -136,7 +136,8 @@ const commands = {
 
             message.channel.send({ embeds: [embed] });
         },
-    },
+    }, 
+    
     servidores: {
         description: 'Mostra todos os servidores conectados',
         execute: (message) => {
@@ -299,7 +300,6 @@ desconectar: {
             message.channel.send({ embeds: [embed] });
         },
     },
-    
     //modificacao
 banir: {
     description: 'Bane um servidor da lista de conexões.',
@@ -473,4 +473,31 @@ if (message.reference && message.reference.messageId) {
                     // Compartilhar figurinhas
                     if (message.stickers.size > 0) {
                         message.stickers.forEach(async (sticker) => {
-                          
+                            await targetChannel.send(`🖼️ Figurinha compartilhada: ${sticker.url}`);
+                        });
+                    }
+
+                    // Emojis de outros servidores
+                    if (message.content.includes('<:')) {
+                        const emojis = message.content.match(/<:.+?:\d+>/g);
+                        if (emojis) {
+                            for (const emoji of emojis) {
+                                await targetChannel.send(`😄 Emoji compartilhado: ${emoji}`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+
+
+// Parte 6 final
+client.login(TOKEN)
+    .then(() => {
+        console.log('Bot logado com sucesso!');
+    })
+    .catch(error => {
+        console.error('Erro ao logar o bot: ', error);
+    });
