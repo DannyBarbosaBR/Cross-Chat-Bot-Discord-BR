@@ -405,15 +405,23 @@ client.on(Events.MessageCreate, async (message) => {
 
                     await targetChannel.send({ embeds: [embed] });
 
-                    // Responder a mensagem original mencionando o autor
-                    if (message.reference && message.reference.messageId) {
-                        const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
-                        if (originalMessage) {
-                            const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
-                            await targetChannel.send({ content: replyContent, messageReference: { messageId: originalMessage.id } });
-                        }
-                    }
+                    
+// Responder a mensagem original mencionando o autor
+if (message.reference && message.reference.messageId) {
+    const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
+    if (originalMessage) {
+        const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
+        
+        // Criar um embed para a resposta
+        const replyEmbed = new EmbedBuilder()
+            .setColor('#FFA500') // Cor do embed da resposta (laranja)
+            .setDescription(replyContent)
+            .setFooter({ text: `Resposta de ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
+        // Enviar a resposta como um embed, mencionando a mensagem original
+        await targetChannel.send({ embeds: [replyEmbed], messageReference: { messageId: originalMessage.id } });
+    }
+}
                     // Compartilhar anexos como links
                     if (message.attachments.size > 0) {
                         message.attachments.forEach(async (attachment) => {
