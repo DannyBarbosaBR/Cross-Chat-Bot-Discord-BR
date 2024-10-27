@@ -17,7 +17,7 @@ import fs from 'fs';
 
 // Carregue suas variáveis de ambiente
 //config();
-const TOKEN = ;
+const TOKEN = ``;
 const CLIENT_SECRET = ;
 const WEBHOOK_URL = `';`;
 
@@ -181,7 +181,29 @@ client.on('messageCreate', async (message) => {
         // await message.delete();
     }
 });
+/// Ready Event - Quando o bot fica online
+client.once('ready', () => {
+    console.log(`Bot está ativo como ${client.user.tag}`);
+    
+    // Mensagem de inicialização embutida
+    const embed = new EmbedBuilder()
+        .setTitle("📺 Bot Sintonizado!")
+        .setDescription("O Danny-Chat está **no ar** e pronto para usar! 🍿")
+        .setColor(0x00FF00)
+        .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+        .setTimestamp()
+        .setFooter({ text: `${client.guilds.cache.first()?.name} - Conectando Comunidades` });
 
+    // Envia a mensagem em todos os canais globais conectados
+    globalConnections.forEach(async (channelId) => {
+        const channel = await client.channels.fetch(channelId).catch(console.error);
+        if (channel && channel.isTextBased()) {
+            channel.send({ embeds: [embed] }).catch(console.error);
+        }
+    });
+});
+/// Shutdown Event - Quando o bot é desligado
+//Parte 6 final
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
 const commands = {
     criador: {
@@ -272,7 +294,7 @@ const commands = {
             // Mensagem de parada embutida
             const shutdownEmbed = new EmbedBuilder()
                 .setTitle("📡 Bot Fora do Ar!")
-                .setDescription("O Danny-Chat está **desligado**. Voltaremos depois! 🌟")
+                .setDescription("O Danny-Chat está **desligado**. Voltaremos depois! 🚫")
                 .setColor(0xFF0000)
                 .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
                 .setTimestamp()
@@ -705,29 +727,6 @@ if (message.content.includes('<:')) {
         }
     }
 });
-/// Ready Event - Quando o bot fica online
-client.once('ready', () => {
-    console.log(`Bot está ativo como ${client.user.tag}`);
-    
-    // Mensagem de inicialização embutida
-    const embed = new EmbedBuilder()
-        .setTitle("📺 Bot Sintonizado!")
-        .setDescription("O Danny-Chat está **no ar** e pronto para usar! 🍿")
-        .setColor(0x00FF00)
-        .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
-        .setTimestamp()
-        .setFooter({ text: `${client.guilds.cache.first()?.name} - Conectando Comunidades` });
-
-    // Envia a mensagem em todos os canais globais conectados
-    globalConnections.forEach(async (channelId) => {
-        const channel = await client.channels.fetch(channelId).catch(console.error);
-        if (channel && channel.isTextBased()) {
-            channel.send({ embeds: [embed] }).catch(console.error);
-        }
-    });
-});
-/// Shutdown Event - Quando o bot é desligado
-//Parte 6 final
 client.login(TOKEN)
     .then(() => {
         console.log('Bot logado com sucesso!');
