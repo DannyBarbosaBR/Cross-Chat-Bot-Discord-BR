@@ -4,23 +4,26 @@ import { config } from 'dotenv';
 import fs from 'fs';
 
 // Manter o bot ativo no Replit
-import express from 'express';
-const app = express();
+//import express from 'express';
+//const app = express();
 
 // Cria uma rota simples para manter o bot online
-app.get('/', (req, res) => res.send('O bot está rodando!'));
+//app.get('/', (req, res) => res.send('O bot está rodando!'));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor HTTP rodando na porta ${PORT}`);
-});
+//const PORT = process.env.PORT || 3000;
+//app.listen(PORT, () => {
+//    console.log(`Servidor HTTP rodando na porta ${PORT}`);
+//});
 
 // Carregue suas variáveis de ambiente
-config();
+//config();
+const TOKEN = ;
+const CLIENT_SECRET = ;
+const WEBHOOK_URL = `';`;
 
-const TOKEN = process.env.TOKEN;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const WEBHOOK_URL = process.env.WEBHOOK_URL;
+//const TOKEN = process.env.TOKEN;
+//const CLIENT_SECRET = process.env.CLIENT_SECRET;
+//const WEBHOOK_URL = process.env.WEBHOOK_URL;
 const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
 let channelConnections = {};
@@ -169,7 +172,7 @@ client.on('messageCreate', async (message) => {
         // Enviar mensagem de aviso
         const warningEmbed = new EmbedBuilder()
             .setColor('#FF0000') // Cor do embed para aviso (vermelho)
-            .setDescription(`🚫 Aviso: Palavrões não são permitidos nesse chat.\n Caso tenha novamente, sujeito a banimento.`)
+            .setDescription(`🚫 Aviso: Os Palavrões não são permitidos nesse chat.\n Temos outros servidores aqui, caso tenha novamente, sujeito a banimento.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [warningEmbed] });
@@ -178,6 +181,7 @@ client.on('messageCreate', async (message) => {
         // await message.delete();
     }
 });
+
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
 const commands = {
     criador: {
@@ -224,40 +228,76 @@ const commands = {
 },
 
     horário: {
-        description: 'Mostra o horário de funcionamento atual.',
-        execute: (message) => {
-            const hoje = new Date();
-            const diasDaSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-            const diaAtual = diasDaSemana[hoje.getDay()]; // Obtém o dia da semana atual
+    description: 'Mostra o horário de funcionamento atual.',
+    execute: async (message) => {
+        const hoje = new Date();
+        const diasDaSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const diaAtual = diasDaSemana[hoje.getDay()]; // Obtém o dia da semana atual
 
-            const horarios = {
-                Domingo: 'Fora de horário',
-                Segunda: '19:00 - 22:00',
-                Terça: '19:00 - 22:00',
-                Quarta: '19:00 - 22:00',
-                Quinta: '19:00 - 22:00',
-                Sexta: 'Fora de horário',
-                Sábado: '14:00 - 21:00',
-            };
+        const horarios = {
+            Domingo: 'Fora de horário',
+            Segunda: '19:00 - 22:00',
+            Terça: '19:00 - 22:00',
+            Quarta: '19:00 - 22:00',
+            Quinta: '19:00 - 22:00',
+            Sexta: 'Fora de horário',
+            Sábado: '14:00 - 21:00',
+        };
 
-            const horarioHoje = horarios[diaAtual]; // Obtém o horário do dia atual
+        const horarioHoje = horarios[diaAtual]; // Obtém o horário do dia atual
+        const ultimoHorario = {
+            Segunda: '22:00',
+            Terça: '22:00',
+            Quarta: '22:00',
+            Quinta: '22:00',
+            Sábado: '21:00',
+        }[diaAtual] || null; // Define o último horário
 
-            const resposta = `🕘 **Horário de Atividade para Hoje: \n(${diaAtual}):** ${horarioHoje}`;
+        const resposta = `🕘 **Horário de Atividade para Hoje: \n(${diaAtual}):** ${horarioHoje}`;
 
-            const embed = new EmbedBuilder()
-                .setColor('#FFC0CB')
-                .setTitle('📅 Horário de Funcionamento')
-                .setDescription(resposta)
-                .setFooter({
-                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-                })
-                .setTimestamp();
+        const embed = new EmbedBuilder()
+            .setColor('#FFC0CB')
+            .setTitle('📅 Horário de Funcionamento')
+            .setDescription(resposta)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
 
-            message.channel.send({ embeds: [embed] });
-        },
-    }, 
-    
+        message.channel.send({ embeds: [embed] });
+
+        // Verifica se o horário está fora de horário
+        if (horarioHoje === 'Fora de horário') {
+            // Mensagem de parada embutida
+            const shutdownEmbed = new EmbedBuilder()
+                .setTitle("📡 Bot Fora do Ar!")
+                .setDescription("O Danny-Chat está **desligado**. Voltaremos depois! 🌟")
+                .setColor(0xFF0000)
+                .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+                .setTimestamp()
+                .setFooter({ text: `${message.guild.name} - Conectando Comunidades` });
+
+            message.channel.send({ embeds: [shutdownEmbed] });
+            return; // Encerra a execução para evitar mais envios
+        }
+
+        // Verifica se o horário atual ultrapassou o último horário
+        if (ultimoHorario && hoje.toTimeString().split(' ')[0] > ultimoHorario) {
+            // Mensagem de parada embutida
+            const shutdownEmbed = new EmbedBuilder()
+                .setTitle("📡 Bot Fora do Ar!")
+                .setDescription("O Danny-Chat está **desligado**. Voltaremos depois! ❌")
+                .setColor(0xFF0000)
+                .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+                .setTimestamp()
+                .setFooter({ text: `${message.guild.name} - Conectando Comunidades` });
+
+            message.channel.send({ embeds: [shutdownEmbed] });
+        }
+    },
+},
+
     servidores: {
         description: 'Mostra todos os servidores conectados',
         execute: (message) => {
@@ -535,7 +575,7 @@ client.on(Events.MessageCreate, async (message) => {
                 message.channel.send('❗ Houve um erro ao executar esse comando.');
             }
         } else {
-            message.channel.send('❌ Comando não encontrado,\n faça \`!ajuda\`, para ver os comandos.');
+            message.channel.send('❌ Comando não encontrado,\n Faça \`!ajuda\`, para ver os comandos.');
         }
     }
 
@@ -665,8 +705,29 @@ if (message.content.includes('<:')) {
         }
     }
 });
+/// Ready Event - Quando o bot fica online
+client.once('ready', () => {
+    console.log(`Bot está ativo como ${client.user.tag}`);
+    
+    // Mensagem de inicialização embutida
+    const embed = new EmbedBuilder()
+        .setTitle("📺 Bot Sintonizado!")
+        .setDescription("O Danny-Chat está **no ar** e pronto para usar! 🍿")
+        .setColor(0x00FF00)
+        .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+        .setTimestamp()
+        .setFooter({ text: `${client.guilds.cache.first()?.name} - Conectando Comunidades` });
 
-// Parte 6 final
+    // Envia a mensagem em todos os canais globais conectados
+    globalConnections.forEach(async (channelId) => {
+        const channel = await client.channels.fetch(channelId).catch(console.error);
+        if (channel && channel.isTextBased()) {
+            channel.send({ embeds: [embed] }).catch(console.error);
+        }
+    });
+});
+/// Shutdown Event - Quando o bot é desligado
+//Parte 6 final
 client.login(TOKEN)
     .then(() => {
         console.log('Bot logado com sucesso!');
