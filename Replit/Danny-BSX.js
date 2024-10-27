@@ -19,7 +19,7 @@ import fs from 'fs';
 //config();
 const TOKEN = ;
 const CLIENT_SECRET = ;
-const WEBHOOK_URL = `https://discord.com/api/webhooks/1292800072379011072/MILo8fEE3rB7fKErdIM5CbYObHtGCYQ8fOGhrQfLboeoUcB_pMmLQWqQlvSUQgHHOwSn';`;
+const WEBHOOK_URL = ;
 
 //const TOKEN = process.env.TOKEN;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -422,4 +422,316 @@ desconectar: {
 
         // Notificação de desconexão para os canais conectados
         const disconnectEmbed = new EmbedBuilder()
-            .setColor(
+            .setColor('#FF0000') // Vermelho para desconexão
+            .setTitle('🔌 Desconectado da Conexão')
+            .setDescription(`O canal <#${channelId}> do **${message.guild.name}** foi desconectado.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        // Envia a notificação para todos os canais conectados
+        for (const id of globalConnections) {
+            try {
+                const channel = await client.channels.fetch(id);
+                await channel.send({ embeds: [disconnectEmbed] });
+            } catch (err) {
+                console.log(`Erro ao enviar mensagem para o canal ${id}: ${err.message}`);
+            }
+        }
+    },
+},
+    
+    ajuda: {
+        description: 'Mostra todos os comandos disponíveis.',
+        execute: (message) => {
+            const helpText = Object.keys(commands).map(cmd => `\`!${cmd}\`: ${commands[cmd].description}`).join('\n');
+            const embed = new EmbedBuilder()
+                .setColor('#3498db')
+                .setTitle('📜 Comandos Disponíveis')
+                .setDescription(helpText)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            message.channel.send({ embeds: [embed] });
+        },
+    },
+    //modificacao
+banir: {
+    description: 'Bane um servidor da lista de conexões.',
+    execute: async (message, args) => {
+        if (message.author.id !== OWNER_ID) {
+            return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
+        }
+
+        const serverId = args[0];
+        if (!serverId) {
+            return message.channel.send('❗ Forneça o ID do servidor para banir.');
+        }
+
+        if (!bannedServers.includes(serverId)) {
+            bannedServers.push(serverId);
+            message.channel.send(`🚫 Servidor ${serverId} foi banido.`);
+            saveConnections();
+
+            // Notificação de banimento
+            const banEmbed = new EmbedBuilder()
+                .setColor('#FF0000') // Vermelho para banimento
+                .setTitle('🚫 Servidor Banido')
+                .setDescription(`O servidor **${serverId}** foi banido da conexão.`)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            // Envia a notificação para todos os canais conectados
+            for (const channelId of globalConnections) {
+                try {
+                    const channel = await client.channels.fetch(channelId);
+                    await channel.send({ embeds: [banEmbed] });
+                } catch (err) {
+                    console.log(`Erro ao enviar mensagem para o canal ${channelId}: ${err.message}`);
+                }
+            }
+        } else {
+            message.channel.send('⚠️ Esse servidor já está banido.');
+        }
+    },
+},
+
+desbanir: {
+    description: 'Remove o banimento de um servidor.',
+    execute: async (message, args) => {
+        if (message.author.id !== OWNER_ID) {
+            return message.channel.send('❌ Apenas o dono do bot pode usar este comando.');
+        }
+
+        const serverId = args[0];
+        if (!serverId) {
+            return message.channel.send('❗ Forneça o ID do servidor para desbanir.');
+        }
+
+        const index = bannedServers.indexOf(serverId);
+        if (index !== -1) {
+            bannedServers.splice(index, 1);
+            message.channel.send(`✅ Servidor ${serverId} foi desbanido.`);
+            saveConnections();
+
+            // Notificação de desbanimento
+            const unbanEmbed = new EmbedBuilder()
+                .setColor('#00FF00') // Verde para desbanimento
+                .setTitle('✅ Servidor Desbanido')
+                .setDescription(`O servidor **${serverId}** foi desbanido e pode se reconectar.`)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            // Envia a notificação para todos os canais conectados
+            for (const channelId of globalConnections) {
+                try {
+                    const channel = await client.channels.fetch(channelId);
+                    await channel.send({ embeds: [unbanEmbed] });
+                } catch (err) {
+                    console.log(`Erro ao enviar mensagem para o canal ${channelId}: ${err.message}`);
+                }
+            }
+        } else {
+            message.channel.send('⚠️ Esse servidor não está banido.');
+               }
+        },
+    },
+};
+
+
+/// Parte 5Gerenciamento de eventos e compartilhamento de mensagens
+client.once(Events.ClientReady, () => {
+    console.log(`🌠 ${client.user.tag} está online`);
+    loadConnections();
+});
+
+// Ouve mensagens e verifica compartilhamentos globais
+client.on(Events.MessageCreate, async (message) => {
+    if (message.author.bot) return;
+
+    // Verificação de comandos
+    if (message.content.startsWith('!')) {
+        const args = message.content.slice(1).trim().split(/ +/);
+        const commandName = args.shift().toLowerCase();
+
+        const command = commands[commandName];
+
+        if (command) {
+            try {
+                await command.execute(message, args);
+            } catch (error) {
+                console.error(`Erro ao executar o comando: ${error}`);
+                message.channel.send('❗ Houve um erro ao executar esse comando.');
+            }
+        } else {
+            message.channel.send('❌ Comando não encontrado,\n Faça \`!ajuda\`, para ver os comandos.');
+        }
+    }
+
+    // Compartilhamento global de mensagens
+    if (globalConnections.includes(message.channel.id)) {
+        for (const targetChannelId of globalConnections) {
+            if (targetChannelId !== message.channel.id) {
+                const targetChannel = await client.channels.fetch(targetChannelId);
+                if (targetChannel) {
+                    // Conteúdo da mensagem
+                    let embedDescription = message.content || "Mensagem sem conteúdo.";
+                    const embed = new EmbedBuilder()
+                        .setColor('#3498db')
+                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                        .setDescription(embedDescription)
+                        .setFooter({
+                            text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                        })
+                        .setTimestamp();
+
+                    await targetChannel.send({ embeds: [embed] });
+
+                    
+// Responder a mensagem original mencionando o autor
+if (message.reference && message.reference.messageId) {
+    const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
+    if (originalMessage) {
+        const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
+        
+        // Criar um embed para a resposta
+        const replyEmbed = new EmbedBuilder()
+            .setColor('#FFA500') // Cor do embed da resposta (laranja)
+            .setDescription(replyContent)
+            .setFooter({ text: `Resposta de ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+        // Enviar a resposta como um embed, mencionando a mensagem original
+        await targetChannel.send({ embeds: [replyEmbed], messageReference: { messageId: originalMessage.id } });
+    }
+}
+                    
+       // Compartilhar anexos como links ou imagens embutidas
+if (message.attachments.size > 0) {
+    message.attachments.forEach(async (attachment) => {
+        const isImage = attachment.contentType && attachment.contentType.startsWith('image');
+        const isAudio = attachment.contentType && attachment.contentType.startsWith('audio');
+        const isVideo = attachment.contentType && attachment.contentType.startsWith('video');
+        const isFile = !isImage && !isAudio && !isVideo;
+
+        if (isImage) {
+            const attachmentEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para imagens (laranja)
+                .setDescription(`🖼️ Imagem compartilhada \n[Veja a imagem aqui](${attachment.url})`) // Link da imagem incluído na descrição
+                .setImage(attachment.url) // Imagem embutida no embed
+                .setFooter({ text: `Imagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [attachmentEmbed] });
+        } else if (isAudio) {
+            const audioEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para áudios (laranja)
+                .setDescription(`🎶 Áudio compartilhado \n[Ouça o áudio aqui](${attachment.url})`) // Link do áudio incluído na descrição
+                .setFooter({ text: `Áudio enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [audioEmbed] });
+        } else if (isVideo) {
+            const videoEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para vídeos (laranja)
+                .setDescription(`🎥 Vídeo compartilhado \n[Assista ao vídeo aqui](${attachment.url})`) // Link do vídeo incluído na descrição
+                .setFooter({ text: `Vídeo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [videoEmbed] });
+        } else if (isFile) {
+            const fileEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para outros tipos de arquivos (laranja)
+                .setDescription(`📎 Arquivo compartilhado \n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
+                .setFooter({ text: `Arquivo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [fileEmbed] });
+        }
+    });
+}
+
+// Compartilhar links compartilhados
+if (message.content.includes('http')) {
+    const links = message.content.match(/https?:\/\/[^\s]+/g);
+    if (links) {
+        for (const link of links) {
+            const linkEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para links (laranja)
+                .setDescription(`🔗 Link compartilhado \n[Acesse aqui](${link})`)
+                .setFooter({ text: `Link enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [linkEmbed] });
+        }
+    }
+}
+
+// Compartilhar figurinhas
+if (message.stickers.size > 0) {
+    message.stickers.forEach(async (sticker) => {
+        const stickerEmbed = new EmbedBuilder()
+            .setColor('#FFA500') // Cor do embed para figurinhas (laranja)
+            .setDescription(`🖼️ Figurinha compartilhada \n[Veja a figurinha aqui](${sticker.url})`) // Link da figurinha incluído na descrição
+            .setFooter({ text: `Figurinha enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+        await targetChannel.send({ embeds: [stickerEmbed] });
+    });
+}
+
+// Emojis de outros servidores
+if (message.content.includes('<:')) {
+    const emojis = message.content.match(/<:.+?:\d+>/g);
+    if (emojis) {
+        for (const emoji of emojis) {
+            const emojiEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para emojis (laranja)
+                .setDescription(`😄 Emoji compartilhado: ${emoji}`)
+                .setFooter({ text: `Emoji enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [emojiEmbed] });           
+            
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+//parte 6 final
+/// Ready Event - Quando o bot fica online
+client.once('ready', () => {
+    console.log(`Bot está ativo como ${client.user.tag}`);
+    
+    // Mensagem de inicialização embutida
+    const embed = new EmbedBuilder()
+        .setTitle("📺 Bot Sintonizado!")
+        .setDescription("O Danny-Chat está **no ar** e pronto para usar! 🍿")
+        .setColor(0x00FF00)
+        .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+        .setTimestamp()
+        .setFooter({ text: `${client.guilds.cache.first()?.name} - Conectando Comunidades` });
+
+    // Envia a mensagem em todos os canais globais conectados
+    globalConnections.forEach(async (channelId) => {
+        const channel = await client.channels.fetch(channelId).catch(console.error);
+        if (channel && channel.isTextBased()) {
+            channel.send({ embeds: [embed] }).catch(console.error);
+        }
+    });
+});
+/// Shutdown Event - Quando o bot é desligado
+
+client.login(TOKEN)
+    .then(() => {
+        console.log('Bot logado com sucesso!');
+    })
+    .catch(error => {
+        console.error('Erro ao logar o bot: ', error);
+    });
