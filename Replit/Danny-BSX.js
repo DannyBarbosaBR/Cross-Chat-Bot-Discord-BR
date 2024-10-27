@@ -195,6 +195,34 @@ const commands = {
             message.channel.send({ embeds: [embed] });
         },
     },
+    
+    informações: {
+    description: 'Mostra informações sobre o bot.',
+    execute: async (message) => {
+        const infoEmbed = new EmbedBuilder()
+            .setColor('#00FF00') // Cor do embed para informações (verde)
+            .setTitle('🌐 Informações sobre o Danny Chat')
+            .setDescription(`
+                O Danny Chat é um bot que conecta servidores, permitindo que as mensagens enviadas em um canal sejam visíveis em todos os servidores conectados.
+                
+                **Como Funciona:**
+                - Ao enviar uma mensagem neste canal, ela será replicada em todos os canais que estão conectados globalmente.
+                - Para que o bot consiga enviar sua mensagem, ele transforma você em "app". Isso é necessário, pois sem essa transformação, a mensagem não poderia ser enviada para os outros servidores.
+                
+                **Conectando Canais:**
+                - Você pode conectar seu canal a outros servidores utilizando o comando \`!global\`.
+                - Uma vez conectado, todas as mensagens enviadas aqui serão compartilhadas com os servidores que fazem parte da conexão.
+            `)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        await message.channel.send({ embeds: [infoEmbed] });
+    },
+},
+
     horário: {
         description: 'Mostra o horário de funcionamento atual.',
         execute: (message) => {
@@ -507,7 +535,7 @@ client.on(Events.MessageCreate, async (message) => {
                 message.channel.send('❗ Houve um erro ao executar esse comando.');
             }
         } else {
-            message.channel.send('❌ Comando não encontrado.');
+            message.channel.send('❌ Comando não encontrado,\n faça \`!ajuda\`, para ver os comandos.');
         }
     }
 
