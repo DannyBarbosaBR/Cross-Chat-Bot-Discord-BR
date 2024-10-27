@@ -146,7 +146,7 @@ const commands = {
 
             const embed = new EmbedBuilder()
                 .setColor('#2E8B57')
-                .setTitle('🌍 Serviddores Globlais')
+                .setTitle('🌍 Servidores Globlais')
                 .setDescription(`Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/8GWFWNmjTa)`)
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
@@ -456,34 +456,88 @@ if (message.reference && message.reference.messageId) {
         await targetChannel.send({ embeds: [replyEmbed], messageReference: { messageId: originalMessage.id } });
     }
 }
-                    // Compartilhar anexos como links
-                    if (message.attachments.size > 0) {
-                        message.attachments.forEach(async (attachment) => {
-                            await targetChannel.send(`🖼️ Imagem compartilhada: ${attachment.url}`);
-                        });
-                    }
+       // Compartilhar anexos como links ou imagens embutidas
+if (message.attachments.size > 0) {
+    message.attachments.forEach(async (attachment) => {
+        const isImage = attachment.contentType && attachment.contentType.startsWith('image');
+        const isAudio = attachment.contentType && attachment.contentType.startsWith('audio');
+        const isVideo = attachment.contentType && attachment.contentType.startsWith('video');
+        const isFile = !isImage && !isAudio && !isVideo;
 
-                    // Compartilhar áudio como link
-                    if (message.attachments.some(att => att.contentType.startsWith('audio'))) {
-                        message.attachments.forEach(async (attachment) => {
-                            await targetChannel.send(`🎶 Áudio compartilhado: ${attachment.url}`);
-                        });
-                    }
+        if (isImage) {
+            const attachmentEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para imagens (laranja)
+                .setDescription(`🖼️ Imagem compartilhada \n[Veja a imagem aqui](${attachment.url})`) // Link da imagem incluído na descrição
+                .setImage(attachment.url) // Imagem embutida no embed
+                .setFooter({ text: `Imagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
-                    // Compartilhar figurinhas
-                    if (message.stickers.size > 0) {
-                        message.stickers.forEach(async (sticker) => {
-                            await targetChannel.send(`🖼️ Figurinha compartilhada: ${sticker.url}`);
-                        });
-                    }
+            await targetChannel.send({ embeds: [attachmentEmbed] });
+        } else if (isAudio) {
+            const audioEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para áudios (laranja)
+                .setDescription(`🎶 Áudio compartilhado \n[Ouça o áudio aqui](${attachment.url})`) // Link do áudio incluído na descrição
+                .setFooter({ text: `Áudio enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
-                    // Emojis de outros servidores
-                    if (message.content.includes('<:')) {
-                        const emojis = message.content.match(/<:.+?:\d+>/g);
-                        if (emojis) {
-                            for (const emoji of emojis) {
-                                await targetChannel.send(`😄 Emoji compartilhado: ${emoji}`);
-                            }
+            await targetChannel.send({ embeds: [audioEmbed] });
+        } else if (isVideo) {
+            const videoEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para vídeos (laranja)
+                .setDescription(`🎥 Vídeo compartilhado \n[Assista ao vídeo aqui](${attachment.url})`) // Link do vídeo incluído na descrição
+                .setFooter({ text: `Vídeo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [videoEmbed] });
+        } else if (isFile) {
+            const fileEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para outros tipos de arquivos (laranja)
+                .setDescription(`📎 Arquivo compartilhado \n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
+                .setFooter({ text: `Arquivo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [fileEmbed] });
+        }
+    });
+}
+
+// Compartilhar links compartilhados
+if (message.content.includes('http')) {
+    const links = message.content.match(/https?:\/\/[^\s]+/g);
+    if (links) {
+        for (const link of links) {
+            const linkEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para links (laranja)
+                .setDescription(`🔗 Link compartilhado \n[Acesse aqui](${link})`)
+                .setFooter({ text: `Link enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [linkEmbed] });
+        }
+    }
+}
+
+// Compartilhar figurinhas
+if (message.stickers.size > 0) {
+    message.stickers.forEach(async (sticker) => {
+        const stickerEmbed = new EmbedBuilder()
+            .setColor('#FFA500') // Cor do embed para figurinhas (laranja)
+            .setDescription(`🖼️ Figurinha compartilhada \n[Veja a figurinha aqui](${sticker.url})`) // Link da figurinha incluído na descrição
+            .setFooter({ text: `Figurinha enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+        await targetChannel.send({ embeds: [stickerEmbed] });
+    });
+}
+
+// Emojis de outros servidores
+if (message.content.includes('<:')) {
+    const emojis = message.content.match(/<:.+?:\d+>/g);
+    if (emojis) {
+        for (const emoji of emojis) {
+            const emojiEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Cor do embed para emojis (laranja)
+                .setDescription(`😄 Emoji compartilhado: ${emoji}`)
+                .setFooter({ text: `Emoji enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+            await targetChannel.send({ embeds: [emojiEmbed] });
+            
+            
+                                       }
                         }
                     }
                 }
@@ -491,7 +545,6 @@ if (message.reference && message.reference.messageId) {
         }
     }
 });
-
 
 // Parte 6 final
 client.login(TOKEN)
