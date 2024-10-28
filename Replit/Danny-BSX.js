@@ -19,7 +19,7 @@ import fs from 'fs';
 //config();
 const TOKEN = ;
 const CLIENT_SECRET = ;
-const WEBHOOK_URL = ;
+const WEBHOOK_URL = `';`;
 
 //const TOKEN = process.env.TOKEN;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -615,6 +615,33 @@ if (message.reference && message.reference.messageId) {
         await targetChannel.send({ embeds: [replyEmbed], messageReference: { messageId: originalMessage.id } });
     }
 }
+// Captura de mensagens de bots
+client.on('messageCreate', async (message) => {
+    if (message.author.bot && message.author.id !== client.user.id) { // Verifica se a mensagem é de um bot que não é ele mesmo
+        const { content, attachments } = message;
+
+        // Mensagem de texto do bot
+        const botMessageEmbed = new EmbedBuilder()
+            .setColor('#FFFF00') // Cor do embed (amarelo)
+            .setDescription(`🤖 Mensagem do Bot: \n${content}`)
+            .setFooter({ text: `Mensagem enviada por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
+
+        // Envia a mensagem formatada
+        await targetChannel.send({ embeds: [botMessageEmbed] });
+
+        // Se houver anexos, enviar também
+        if (attachments.size > 0) {
+            attachments.forEach(async (attachment) => {
+                const attachmentEmbed = new EmbedBuilder()
+                    .setColor('#FFFF00') // Cor do embed (amarelo)
+                    .setDescription(`📎 Anexo compartilhado \n[Veja o anexo aqui](${attachment.url})`) // Link do anexo incluído na descrição
+                    .setFooter({ text: `Anexo enviado por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
+
+                await targetChannel.send({ embeds: [attachmentEmbed] });
+            });
+        }
+    }
+}); // Fechamento para o if e para a função client.on
                     
        // Compartilhar anexos como links ou imagens embutidas
 if (message.attachments.size > 0) {
