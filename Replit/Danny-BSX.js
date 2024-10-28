@@ -76,6 +76,7 @@ function formatDateTime() {
     const date = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' });
     return `🕘 ${date} | 🗓️ ${hours}`;
 }
+
 // Regras do Danny-Chat
 const dchatRules = `
 1. **Use o bom senso:** Seja considerado com os outros e suas opiniões. Sem ofensas, linguagem extrema ou qualquer ação que possa perturbar o conforto do chat.
@@ -182,6 +183,7 @@ client.on('messageCreate', async (message) => {
     }
 });
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
+
 const commands = {
     criador: {
         description: 'Mostra quem é o criador do bot',
@@ -549,7 +551,7 @@ desbanir: {
 };
 
 
-/// Parte 5Gerenciamento de eventos e compartilhamento de mensagens
+/// Parte 5 Gerenciamento de eventos e compartilhamento de mensagens
 client.once(Events.ClientReady, () => {
     console.log(`🌠 ${client.user.tag} está online`);
     loadConnections();
@@ -577,7 +579,8 @@ client.on(Events.MessageCreate, async (message) => {
             message.channel.send('❌ Comando não encontrado,\n Faça \`!ajuda\`, para ver os comandos.');
         }
     }
-
+    
+    
     // Compartilhamento global de mensagens
     if (globalConnections.includes(message.channel.id)) {
         for (const targetChannelId of globalConnections) {
@@ -599,12 +602,13 @@ client.on(Events.MessageCreate, async (message) => {
                     await targetChannel.send({ embeds: [embed] });
 
                     
-// Responder a mensagem original mencionando o autor
 if (message.reference && message.reference.messageId) {
     const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
     if (originalMessage) {
-        const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
-        
+        const botEmoji = originalMessage.author.bot ? "🤖 " : ""; // Adiciona o emoji de bot se o autor for um bot
+        const messageLink = `https://discord.com/channels/${message.guild.id}/${message.channel.id}/${originalMessage.id}`;
+        const replyContent = `🔁 Resposta a ${botEmoji}${originalMessage.author}:\n${originalMessage.content}\n[Clique aqui para ver a mensagem](${messageLink})`;
+
         // Criar um embed para a resposta
         const replyEmbed = new EmbedBuilder()
             .setColor('#FFA500') // Cor do embed da resposta (laranja)
@@ -615,18 +619,19 @@ if (message.reference && message.reference.messageId) {
         await targetChannel.send({ embeds: [replyEmbed], messageReference: { messageId: originalMessage.id } });
     }
 }
+
 // Captura de mensagens de bots
 client.on('messageCreate', async (message) => {
     if (message.author.bot && message.author.id !== client.user.id) { // Verifica se a mensagem é de um bot que não é ele mesmo
         const { content, attachments } = message;
 
-        // Mensagem de texto do bot
+        // Mensagem de texto do bot com link para a mensagem original
         const botMessageEmbed = new EmbedBuilder()
             .setColor('#FFFF00') // Cor do embed (amarelo)
-            .setDescription(`🤖 Mensagem do Bot: \n${content}`)
+            .setDescription(`🤖 Mensagem do Bot:\n [Clique aqui para ver a mensagem](${message.url})`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
 
-        // Envia a mensagem formatada
+        // Envia a mensagem formatada com o link
         await targetChannel.send({ embeds: [botMessageEmbed] });
 
         // Se houver anexos, enviar também
@@ -641,8 +646,10 @@ client.on('messageCreate', async (message) => {
             });
         }
     }
-}); // Fechamento para o if e para a função client.on
+});
                     
+    // Atualiza o cooldown
+    cooldowns.set(message.author.id, Date.now());
        // Compartilhar anexos como links ou imagens embutidas
 if (message.attachments.size > 0) {
     message.attachments.forEach(async (attachment) => {
@@ -753,6 +760,7 @@ client.once('ready', () => {
         }
     });
 });
+
 /// Shutdown Event - Quando o bot é desligado
 
 client.login(TOKEN)
