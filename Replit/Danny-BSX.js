@@ -19,7 +19,7 @@ import fs from 'fs';
 //config();
 const TOKEN = ;
 const CLIENT_SECRET = ;
-const WEBHOOK_URL = `';`;
+const WEBHOOK_URL = `https://discord.com/api/webhooks/1292800072379011072/MILo8fEE3rB7fKErdIM5CbYObHtGCYQ8fOGhrQfLboeoUcB_pMmLQWqQlvSUQgHHOwSn';`;
 const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
 // Limite de palavras
@@ -702,7 +702,6 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 
 await targetChannel.send({ embeds: [embed] });
                
-
 // Responder a mensagem original mencionando o autor
 if (message.reference && message.reference.messageId) {
 const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
@@ -808,6 +807,58 @@ await targetChannel.send({ embeds: [emojiEmbed] });
 }
 }
 });
+const sentMessages = new Set(); // Inicializa sentMessages como um Set
+
+// Captura de mensagens de bots
+client.on('messageCreate', async (message) => {
+    // Verifica se a mensagem é de um bot que não é ele mesmo
+    if (message.author.bot && message.author.id !== client.user.id) {
+        const { content, attachments } = message;
+
+        // Verifica se o canal atual tem uma conexão global
+        if (!globalConnections.includes(message.channel.id)) {
+            return; // Não faz nada se o canal não está conectado globalmente
+        }
+
+        // Verifica se a mensagem já foi enviada
+        if (sentMessages.has(message.id)) {
+            return; // Se já foi enviada, não faz nada
+        }
+
+        // Adiciona o ID da mensagem ao conjunto para evitar duplicação
+        sentMessages.add(message.id);
+
+        // Mensagem de texto do bot
+        const botMessageEmbed = new EmbedBuilder()
+            .setColor('#FFFF00') // Cor do embed (amarelo)
+            .setDescription(`🤖 Mensagem do Bot: \n${content}`)
+            .setFooter({ text: `Mensagem enviada por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
+
+        // Enviar a mensagem embed para todos os canais globais conectados
+        for (const channelId of globalConnections) {
+            try {
+                const channel = await client.channels.fetch(channelId);
+
+                // Verifica se o canal é válido e se o bot já enviou mensagem
+                if (channel) {
+                    // Enviar a mensagem embed
+                    await channel.send({ embeds: [botMessageEmbed] });
+
+                    // Enviar anexos se existirem
+                    if (attachments.size > 0) {
+                        for (const attachment of attachments.values()) {
+                            await channel.send({ files: [attachment.url] }); // Envia cada anexo
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log(`Canal ${channelId} não encontrado, removendo da lista de conexões.`);
+                globalConnections = globalConnections.filter(id => id !== channelId); // Remove o canal da lista
+            }
+        }
+    }
+});
+
 //parte 6 final
 /// Ready Event - Quando o bot fica online
 client.once('ready', () => {
