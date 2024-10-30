@@ -19,12 +19,18 @@ import fs from 'fs';
 //config();
 const TOKEN = ;
 const CLIENT_SECRET = ;
-const WEBHOOK_URL = `https://discord.com/api/webhooks/1292800072379011072/MILo8fEE3rB7fKErdIM5CbYObHtGCYQ8fOGhrQfLboeoUcB_pMmLQWqQlvSUQgHHOwSn';`;
+const WEBHOOK_URL = `';`;
+const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
+
+// Limite de palavras
+const MAX_WARNINGS = 3; // Número máximo de avisos permitidos por servidor
+const MAX_WORDS = 50; // Limite de palavras
+const cooldowns = new Map(); // Mapa para gerenciar cooldowns
+const warnedServers = new Map(); // Mapa para rastrear avisos por servidor
 
 //const TOKEN = process.env.TOKEN;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 //const WEBHOOK_URL = process.env.WEBHOOK_URL;
-const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
 let channelConnections = {};
 let globalConnections = [];
@@ -158,29 +164,127 @@ const forbiddenWords = [
 'xaninha', 'xavasca', 'xerereca', 'xexeca', 'xibiu', 
 'xibumba', 'xiíta', 'xochota', 'xota', 'xoxota'
 ];
+
 client.on('messageCreate', async (message) => {
-// Ignorar mensagens do bot para evitar loops
-if (message.author.bot) return;
+    // Ignorar mensagens do bot para evitar loops
+    if (message.author.bot) return;
 
-// Verificar se a mensagem está em um canal global
-if (!globalConnections.includes(message.channel.id)) return;
+    // Verificar se a mensagem está em um canal global
+    if (!globalConnections.includes(message.channel.id)) return;
 
-// Verificar se a mensagem contém alguma palavra proibida
-const containsForbiddenWord = forbiddenWords.some(word => message.content.toLowerCase().includes(word));
+    // Inicializa contador de avisos para o servidor
+    if (!warnedServers.has(message.guild.id)) {
+        warnedServers.set(message.guild.id, {
+            forbiddenWordWarnings: 0,
+            repeatedMessageWarnings: 0,
+            wordLimitWarnings: 0,
+            messageHistory: []
+        });
+    }
+    const serverWarnings = warnedServers.get(message.guild.id);
 
-if (containsForbiddenWord) {
-// Enviar mensagem de aviso
-const warningEmbed = new EmbedBuilder()
-.setColor('#FF0000') // Cor do embed para aviso (vermelho)
-.setDescription(`🚫 Aviso: Os Palavrões não são permitidos nesse chat.\n Temos outros servidores aqui, caso tenha novamente, sujeito a banimento.`)
-.setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+    // Verificar se a mensagem contém alguma palavra proibida
+    const containsForbiddenWord = forbiddenWords.some(word => message.content.toLowerCase().includes(word));
 
-await message.channel.send({ embeds: [warningEmbed] });
+    if (containsForbiddenWord) {
+        const remainingWarnings = 5 - serverWarnings.forbiddenWordWarnings;
+        const warningEmbed = new EmbedBuilder()
+            .setColor('#FF0000') // Cor do embed para aviso (vermelho)
+            .setDescription(`🚫 Aviso: Palavras proibidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
-// Opcional: você pode deletar a mensagem original
-// await message.delete();
-}
-});
+        await message.channel.send({ embeds: [warningEmbed] });
+
+        // Incrementa o contador de avisos por palavrões
+        serverWarnings.forbiddenWordWarnings += 1;
+
+        // Verifica se o número de avisos por palavrões ultrapassa o limite
+        if (serverWarnings.forbiddenWordWarnings >= 5) { // Limite de 5 avisos
+            await disconnectServer(message); // Desconecta o servidor se atingir o limite
+            return;
+        }
+    }
+
+    // Detectar mensagens repetidas
+    const messageContent = message.content.toLowerCase();
+    const messageHistory = serverWarnings.messageHistory;
+    
+    // Adiciona a nova mensagem ao histórico
+    messageHistory.push(messageContent);
+    
+    // Verifica se a mesma mensagem foi enviada 5 vezes consecutivas
+    const repeatedCount = messageHistory.filter(msg => msg === messageContent).length;
+
+    if (repeatedCount >= 5) {
+        const remainingWarnings = 5 - serverWarnings.repeatedMessageWarnings;
+        const repeatWarningEmbed = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setDescription(`🚫 Aviso: Mensagens repetidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+        await message.channel.send({ embeds: [repeatWarningEmbed] });
+
+        // Incrementa o contador de avisos por mensagens repetidas
+        serverWarnings.repeatedMessageWarnings += 1;
+
+        // Verifica se o número de avisos por mensagens repetidas ultrapassa o limite
+        if (serverWarnings.repeatedMessageWarnings >= 5) { // Limite de 5 avisos
+            await disconnectServer(message); // Desconecta o servidor se atingir o limite
+            return;
+        }
+    }
+
+    // Limite de palavras
+    const MAX_WORDS = 50; // Defina o número máximo de palavras permitidas
+    const messageWordCount = message.content.split(/\s+/).length;
+    
+    if (messageWordCount > MAX_WORDS) {
+        const remainingWarnings = 5 - serverWarnings.wordLimitWarnings;
+        const wordLimitEmbed = new EmbedBuilder()
+            .setColor('#FFFF00') // Cor do embed para limite de palavras (amarelo)
+            .setDescription(`⚠️ Aviso: Sua mensagem excede o limite de ${MAX_WORDS} palavras. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+        await message.channel.send({ embeds: [wordLimitEmbed] });
+        
+        // Incrementa o contador de avisos por limite de palavras
+        serverWarnings.wordLimitWarnings += 1;
+
+        // Verifica se o número de avisos por limite de palavras ultrapassa o limite
+        if (serverWarnings.wordLimitWarnings >= 5) { // Limite de 5 avisos
+            await disconnectServer(message); // Desconecta o servidor se atingir o limite
+            return;
+        }
+    }
+
+}); // Fechamento do evento 'messageCreate'
+
+// Função para desconectar o servidor automaticamente
+const disconnectServer = async (message) => {
+    globalConnections = globalConnections.filter(id => id !== message.channel.id); // Remove o canal da lista global
+    saveConnections(); // Salva o estado das conexões
+
+    const disconnectEmbed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setTitle('🔌 Servidor Desconectado')
+        .setDescription(`O servidor **${message.guild.name}** foi desconectado da conexão global por excesso de avisos.`)
+        .setFooter({
+            text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+        })
+        .setTimestamp();
+
+    // Notifica todos os canais restantes na conexão global
+    for (const id of globalConnections) {
+        try {
+            const channel = await client.channels.fetch(id);
+            await channel.send({ embeds: [disconnectEmbed] });
+        } catch (err) {
+            console.log(`Erro ao enviar mensagem para o canal ${id}: ${err.message}`);
+        }
+    }
+};
+
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
 const commands = {
 criador: {
@@ -577,7 +681,7 @@ message.channel.send('❗ Houve um erro ao executar esse comando.');
 message.channel.send('❌ Comando não encontrado,\n Faça \`!ajuda\`, para ver os comandos.');
 }
 }
-
+               
 // Compartilhamento global de mensagens
 if (globalConnections.includes(message.channel.id)) {
 for (const targetChannelId of globalConnections) {
@@ -597,7 +701,7 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 .setTimestamp();
 
 await targetChannel.send({ embeds: [embed] });
-
+               
 
 // Responder a mensagem original mencionando o autor
 if (message.reference && message.reference.messageId) {
@@ -615,34 +719,7 @@ const replyEmbed = new EmbedBuilder()
 await targetChannel.send({ embeds: [replyEmbed], messageReference: { messageId: originalMessage.id } });
 }
 }
-// Captura de mensagens de bots
-client.on('messageCreate', async (message) => {
-    if (message.author.bot && message.author.id !== client.user.id) { // Verifica se a mensagem é de um bot que não é ele mesmo
-        const { content, attachments } = message;
-
-        // Mensagem de texto do bot
-        const botMessageEmbed = new EmbedBuilder()
-            .setColor('#FFFF00') // Cor do embed (amarelo)
-            .setDescription(`🤖 Mensagem do Bot: \n${content}`)
-            .setFooter({ text: `Mensagem enviada por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
-
-        // Envia a mensagem formatada
-        await targetChannel.send({ embeds: [botMessageEmbed] });
-
-        // Se houver anexos, enviar também
-        if (attachments.size > 0) {
-            attachments.forEach(async (attachment) => {
-                const attachmentEmbed = new EmbedBuilder()
-                    .setColor('#FFFF00') // Cor do embed (amarelo)
-                    .setDescription(`📎 Anexo compartilhado \n[Veja o anexo aqui](${attachment.url})`) // Link do anexo incluído na descrição
-                    .setFooter({ text: `Anexo enviado por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
-
-                await targetChannel.send({ embeds: [attachmentEmbed] });
-            });
-        }
-    }
-}); // Fechamento para o if e para a função client.on
-
+               
 // Compartilhar anexos como links ou imagens embutidas
 if (message.attachments.size > 0) {
 message.attachments.forEach(async (attachment) => {
