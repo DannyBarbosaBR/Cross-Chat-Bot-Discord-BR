@@ -479,7 +479,7 @@ global: {
         const numberOfConnections = globalConnections.length;
         const notificationEmbed = new EmbedBuilder()
             .setColor('#00FF00')
-            .setTitle('🌐 Novo Servidor Conectado')
+            .setTitle('👋 Novo Servidor Conectado')
             .setDescription(`O servidor **${message.guild.name}** entrou na conexão!\nAgora temos **${numberOfConnections}** servidores conectados.`)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
