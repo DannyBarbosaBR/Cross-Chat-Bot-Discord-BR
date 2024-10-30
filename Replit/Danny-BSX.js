@@ -419,134 +419,223 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 message.channel.send({ embeds: [embed] });
 }, // Corrigido: removeu o ponto e vírgula aqui
 },
+    
 global: {
-description: 'Conecta o canal atual a outros servidores.',
-execute: async (message) => {
-if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-return message.channel.send('❌ Você não tem permissão para usar este comando.');
-}
+    description: 'Conecta o canal atual a outros servidores.',
+    execute: async (message) => {
+        if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
+            const noPermissionEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❌ Permissão Negada')
+                .setDescription('Você não tem permissão para usar este comando.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
 
-if (globalConnections.includes(message.channel.id)) {
-return message.channel.send('🔗 Este canal já está conectado globalmente.');
-}
+            return message.channel.send({ embeds: [noPermissionEmbed] });
+        }
 
-globalConnections.push(message.channel.id);
-message.channel.send(`🌐 Canal <#${message.channel.id}> conectado globalmente.`);
+        if (globalConnections.includes(message.channel.id)) {
+            const alreadyConnectedEmbed = new EmbedBuilder()
+                .setColor('#FFA500')
+                .setTitle('🔗 Conexão Global')
+                .setDescription('Este canal já está conectado globalmente.\nPara mais detalhes, use `!informações`.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
 
-const embedRules = new EmbedBuilder()
-.setColor('#FFFF00')
-.setTitle('📜 Regras do Danny-Chat')
-.setDescription(dchatRules)
-.setFooter({
-text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
+            return message.channel.send({ embeds: [alreadyConnectedEmbed] });
+        }
 
-message.channel.send({ embeds: [embedRules] });
+        globalConnections.push(message.channel.id);
+        const connectedEmbed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle('🌐 Canal Conectado')
+            .setDescription(`Canal <#${message.channel.id}> conectado globalmente. \nPara mais detalhes, use \`!informações\`.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
 
-const numberOfConnections = globalConnections.length;
-const notificationEmbed = new EmbedBuilder()
-.setColor('#00FF00')
-.setTitle('🌐 Novo Servidor Conectado')
-.setDescription(`O servidor **${message.guild.name}** entrou na conexão! \nAgora temos **${numberOfConnections}** servidores conectados.`)
-.setFooter({
-text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
+        message.channel.send({ embeds: [connectedEmbed] });
 
-// Verifica se os canais existem antes de enviar a mensagem
-const validChannels = [];
-for (const channelId of globalConnections) {
-try {
-const channel = await client.channels.fetch(channelId);
-validChannels.push(channel); // Armazena canais válidos
-} catch (error) {
-console.log(`Canal ${channelId} não encontrado, removendo da lista de conexões.`);
-globalConnections = globalConnections.filter(id => id !== channelId); // Remove o canal da lista
-}
-}
+        const embedRules = new EmbedBuilder()
+            .setColor('#FFFF00')
+            .setTitle('📜 Regras do Danny-Chat')
+            .setDescription(dchatRules)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
 
-// Envia a mensagem apenas para canais válidos
-for (const channel of validChannels) {
-try {
-await channel.send({ embeds: [notificationEmbed] });
-} catch (err) {
-console.log(`Erro ao enviar mensagem para o canal ${channel.id}: ${err.message}`);
-}
-}
+        message.channel.send({ embeds: [embedRules] });
 
-saveConnections();
-},
+        const numberOfConnections = globalConnections.length;
+        const notificationEmbed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle('🌐 Novo Servidor Conectado')
+            .setDescription(`O servidor **${message.guild.name}** entrou na conexão!\nAgora temos **${numberOfConnections}** servidores conectados.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        // Verifica se os canais existem antes de enviar a mensagem
+        const validChannels = [];
+        for (const channelId of globalConnections) {
+            try {
+                const channel = await client.channels.fetch(channelId);
+                validChannels.push(channel); // Armazena canais válidos
+            } catch (error) {
+                console.log(`Canal ${channelId} não encontrado, removendo da lista de conexões.`);
+                globalConnections = globalConnections.filter(id => id !== channelId); // Remove o canal da lista
+            }
+        }
+
+        // Envia a mensagem apenas para canais válidos
+        for (const channel of validChannels) {
+            try {
+                await channel.send({ embeds: [notificationEmbed] });
+            } catch (err) {
+                console.log(`Erro ao enviar mensagem para o canal ${channel.id}: ${err.message}`);
+            }
+        }
+
+        saveConnections();
+    },
 },
 
 conectar: {
-description: 'Conecta o canal a um outro do servidor',
-execute: (message) => {
-if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
-return message.channel.send('❌ Você não tem permissão para usar este comando.');
-}
+    description: 'Conecta o canal a um outro do servidor',
+    execute: (message) => {
+        if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
+            const noPermissionEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❌ Permissão Negada')
+                .setDescription('Você não tem permissão para usar este comando.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
 
-const targetChannel = message.mentions.channels.first();
-if (!targetChannel) {
-return message.channel.send('❗ Por favor, mencione um canal para conectar.');
-}
+            return message.channel.send({ embeds: [noPermissionEmbed] });
+        }
 
-if (!channelConnections[message.guild.id]) {
-channelConnections[message.guild.id] = [];
-}
+        const targetChannel = message.mentions.channels.first();
+        if (!targetChannel) {
+            const noTargetEmbed = new EmbedBuilder()
+                .setColor('#FFA500')
+                .setTitle('❗ Canal Não Encontrado')
+                .setDescription('Por favor, mencione um canal para conectar.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
 
-channelConnections[message.guild.id].push({
-sourceChannelId: message.channel.id,
-targetChannelId: targetChannel.id,
-});
+            return message.channel.send({ embeds: [noTargetEmbed] });
+        }
 
-message.channel.send(`🔗 Canal <#${message.channel.id}> conectado ao canal <#${targetChannel.id}>.`);
-saveConnections();
+        if (!channelConnections[message.guild.id]) {
+            channelConnections[message.guild.id] = [];
+        }
+
+        channelConnections[message.guild.id].push({
+            sourceChannelId: message.channel.id,
+            targetChannelId: targetChannel.id,
+        });
+
+        const connectEmbed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle('🔗 Canal Conectado')
+            .setDescription(`Canal <#${message.channel.id}> conectado ao canal <#${targetChannel.id}>.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        message.channel.send({ embeds: [connectEmbed] });
+        saveConnections();
+    },
 },
-},
-// Comando !descontar - Desconecta o canal atual da conexão ativa.
+    
 desconectar: {
-description: 'Desconecta um canal conectado.',
-async execute(message) {
-const channelId = message.channel.id;
+    description: 'Desconecta um canal conectado.',
+    async execute(message) {
+        const channelId = message.channel.id;
 
-// Verifica se o canal está na lista de conexões globais
-if (!globalConnections.includes(channelId)) {
-return message.channel.send('❌ Este canal não está conectado globalmente.');
-}
+        // Verifica se o canal está na lista de conexões globais
+        if (!globalConnections.includes(channelId)) {
+            const notConnectedEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❌ Não Conectado')
+                .setDescription('Este canal não está conectado globalmente.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
 
-// Remove o canal da lista de conexões globais
-globalConnections = globalConnections.filter(id => id !== channelId);
-message.channel.send(`🔌 Canal <#${channelId}> desconectado com sucesso.`);
+            return message.channel.send({ embeds: [notConnectedEmbed] });
+        }
 
-// Salva as conexões após a desconexão
-saveConnections();
+        // Remove o canal da lista de conexões globais
+        globalConnections = globalConnections.filter(id => id !== channelId);
 
-// Notificação de desconexão para os canais conectados
-const disconnectEmbed = new EmbedBuilder()
-.setColor('#FF0000') // Vermelho para desconexão
-.setTitle('🔌 Desconectado da Conexão')
-.setDescription(`O canal <#${channelId}> do **${message.guild.name}** foi desconectado.`)
-.setFooter({
-text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
+        const disconnectSuccessEmbed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle('🔌 Desconectado com Sucesso')
+            .setDescription(`Canal <#${channelId}> desconectado com sucesso.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
 
-// Envia a notificação para todos os canais conectados
-for (const id of globalConnections) {
-try {
-const channel = await client.channels.fetch(id);
-await channel.send({ embeds: [disconnectEmbed] });
-} catch (err) {
-console.log(`Erro ao enviar mensagem para o canal ${id}: ${err.message}`);
-}
-}
+        message.channel.send({ embeds: [disconnectSuccessEmbed] });
+
+        // Salva as conexões após a desconexão
+        saveConnections();
+
+        // Notificação de desconexão para os canais conectados
+        const disconnectEmbed = new EmbedBuilder()
+            .setColor('#FF0000') // Vermelho para desconexão
+            .setTitle('🔌 Desconectado da Conexão')
+            .setDescription(`O canal <#${channelId}> do **${message.guild.name}** foi desconectado.`)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+
+        // Envia a notificação para todos os canais conectados
+        for (const id of globalConnections) {
+            try {
+                const channel = await client.channels.fetch(id);
+                await channel.send({ embeds: [disconnectEmbed] });
+            } catch (err) {
+                console.log(`Erro ao enviar mensagem para o canal ${id}: ${err.message}`);
+            }
+        }
+
+        // Remove conexões associadas ao canal desconectado
+        if (channelConnections[message.guild.id]) {
+            channelConnections[message.guild.id] = channelConnections[message.guild.id].filter(connection => {
+                return connection.sourceChannelId !== channelId && connection.targetChannelId !== channelId;
+            });
+        }
+    },
 },
-},
-
+    
 ajuda: {
 description: 'Mostra todos os comandos disponíveis.',
 execute: (message) => {
@@ -563,6 +652,7 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 message.channel.send({ embeds: [embed] });
 },
 },
+    
 //modificacao
 banir: {
     description: 'Bane um servidor da lista de conexões.',
