@@ -444,6 +444,39 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 message.channel.send({ embeds: [embed] });
 }, // Corrigido: removeu o ponto e vírgula aqui
 },
+    
+expulsos: {
+    description: 'Mostra todos os expulsos da conexão.',
+    execute: (message) => {
+        const bannedServerCount = bannedServers.length;
+        const mutedUserCount = mutedUsers.length;
+        
+        const bannedServerList = bannedServers.length > 0 
+            ? bannedServers.map(serverId => `ID: ${serverId}`).join('\n') 
+            : 'Nenhum servidor banido.';
+        
+        const mutedUserList = mutedUsers.length > 0 
+            ? mutedUsers.map(userId => `ID: ${userId}`).join('\n') 
+            : 'Nenhum usuário mutado.';
+        
+        const embed = new EmbedBuilder()
+            .setColor('#FF4500')
+            .setTitle('🚫 Expulsos')
+            .setDescription(`Lista de servidores banidos e usuários mutados:`)
+            .addFields(
+                { name: '🛑 Servidores Banidos', value: bannedServerList, inline: false },
+                { name: '🔇 Usuários Mutados', value: mutedUserList, inline: false }
+            )
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+        
+        message.channel.send({ embeds: [embed] });
+    },
+},
+    
 global: {
     description: 'Conecta o canal atual a outros servidores.',
     execute: async (message) => {
@@ -982,37 +1015,6 @@ desmutar: {
     },
 },
 
-expulsos: {
-    description: 'Mostra todos os expulsos da conexão.',
-    execute: (message) => {
-        const bannedServerCount = bannedServers.length;
-        const mutedUserCount = mutedUsers.length;
-        
-        const bannedServerList = bannedServers.length > 0 
-            ? bannedServers.map(serverId => `ID: ${serverId}`).join('\n') 
-            : 'Nenhum servidor banido.';
-        
-        const mutedUserList = mutedUsers.length > 0 
-            ? mutedUsers.map(userId => `ID: ${userId}`).join('\n') 
-            : 'Nenhum usuário mutado.';
-        
-        const embed = new EmbedBuilder()
-            .setColor('#FF4500')
-            .setTitle('🚫 Expulsos')
-            .setDescription(`Lista de servidores banidos e usuários mutados:`)
-            .addFields(
-                { name: '🛑 Servidores Banidos', value: bannedServerList, inline: false },
-                { name: '🔇 Usuários Mutados', value: mutedUserList, inline: false }
-            )
-            .setFooter({
-                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-            })
-            .setTimestamp();
-        
-        message.channel.send({ embeds: [embed] });
-    },
-},
 
 }; //fechamento de comandos 
 
