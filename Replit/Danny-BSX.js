@@ -28,6 +28,7 @@ const MAX_WORDS = 50; // Limite de palavras
 const cooldowns = new Map(); // Mapa para gerenciar cooldowns
 const warnedServers = new Map(); // Mapa para rastrear avisos por servidor
 
+//senhas online 
 //const TOKEN = process.env.TOKEN;
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 //const WEBHOOK_URL = process.env.WEBHOOK_URL;
@@ -35,45 +36,55 @@ const warnedServers = new Map(); // Mapa para rastrear avisos por servidor
 let channelConnections = {};
 let globalConnections = [];
 let bannedServers = [];
+let mutedUsers = []; // Adiciona a lista de usuários mutados
 
 // Crie uma nova instância do cliente Discord
 const client = new Client({
-intents: [
-GatewayIntentBits.Guilds,
-GatewayIntentBits.GuildMessages,
-GatewayIntentBits.MessageContent,
-GatewayIntentBits.GuildMembers,
-],
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+    ],
 });
-//parte 2 Funções para carregar e salvar conexões.
+
 // Função para carregar conexões
 function loadConnections() {
-if (fs.existsSync('Salvamento.json')) {
-try {
-const data = fs.readFileSync('Salvamento.json', 'utf8');
-if (data.trim().length === 0) {
-channelConnections = {};
-globalConnections = [];
-bannedServers = [];
-} else {
-const parsedData = JSON.parse(data);
-channelConnections = parsedData.channelConnections || {};
-globalConnections = parsedData.globalConnections || [];
-bannedServers = parsedData.bannedServers || [];
-}
-} catch (error) {
-console.error("Erro ao carregar conexões: ", error);
-channelConnections = {};
-globalConnections = [];
-bannedServers = [];
-}
-}
+    if (fs.existsSync('Salvamento.json')) {
+        try {
+            const data = fs.readFileSync('Salvamento.json', 'utf8');
+            if (data.trim().length === 0) {
+                channelConnections = {};
+                globalConnections = [];
+                bannedServers = [];
+                mutedUsers = []; // Inicializa lista de usuários mutados ao carregar dados vazios
+            } else {
+                const parsedData = JSON.parse(data);
+                channelConnections = parsedData.channelConnections || {};
+                globalConnections = parsedData.globalConnections || [];
+                bannedServers = parsedData.bannedServers || [];
+                mutedUsers = parsedData.mutedUsers || []; // Carrega a lista de usuários mutados
+            }
+        } catch (error) {
+            console.error("Erro ao carregar conexões: ", error);
+            channelConnections = {};
+            globalConnections = [];
+            bannedServers = [];
+            mutedUsers = []; // Reinicia lista de usuários mutados em caso de erro
+        }
+    }
 }
 
 // Função para salvar conexões
 function saveConnections() {
-fs.writeFileSync('Salvamento.json', JSON.stringify({ channelConnections, globalConnections, bannedServers }));
+    fs.writeFileSync('Salvamento.json', JSON.stringify({
+        channelConnections,
+        globalConnections,
+        bannedServers,
+        mutedUsers // Salva a lista de usuários mutados
+    }));
 }
+
 //parte 3 Funções utilitárias, como formatação de data e regras do servidor
 // Função que formata a data e hora corretamente
 function formatDateTime() {
@@ -190,8 +201,8 @@ client.on('messageCreate', async (message) => {
         const remainingWarnings = 5 - serverWarnings.forbiddenWordWarnings;
         const warningEmbed = new EmbedBuilder()
             .setColor('#FF0000') // Cor do embed para aviso (vermelho)
-            .setTitle('🚫 Aviso:')
-            .setDescription(`Palavras proibidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setTitle('🚫 Aviso')
+            .setDescription(`Palavras proibidas não são permitidas. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [warningEmbed] });
@@ -220,8 +231,8 @@ client.on('messageCreate', async (message) => {
         const remainingWarnings = 5 - serverWarnings.repeatedMessageWarnings;
         const repeatWarningEmbed = new EmbedBuilder()
             .setColor('#FF0000')
-            .setTitle('🚫 Aviso:')
-            .setDescription(`Mensagens repetidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setTitle('🚫 Aviso')
+            .setDescription(`Mensagens repetidas não são permitidas.\n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [repeatWarningEmbed] });
@@ -235,29 +246,40 @@ client.on('messageCreate', async (message) => {
             return;
         }
     }
-    
-    const messageWordCount = message.content.split(/\s+/).length;
-    
-    if (messageWordCount > MAX_WORDS) {
-        const remainingWarnings = 5 - serverWarnings.wordLimitWarnings;
-        const wordLimitEmbed = new EmbedBuilder()
-            .setColor('#FFFF00') // Cor do embed para limite de palavras (amarelo)
-            .setTitle('⚠️ Aviso:')
-            .setDescription(`Sua mensagem excede o limite de ${MAX_WORDS} palavras. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
-            .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+const MAX_WORDS = 100; // Defina o limite de palavras
 
-        await message.channel.send({ embeds: [wordLimitEmbed] });
-        
-        // Incrementa o contador de avisos por limite de palavras
-        serverWarnings.wordLimitWarnings += 1;
+// Verifica se `serverWarnings` já existe, se não, inicializa
+if (!serverWarnings) {
+    serverWarnings = {
+        wordLimitWarnings: 0 // Inicializa o contador de avisos
+    };
+}
 
-        // Verifica se o número de avisos por limite de palavras ultrapassa o limite
-        if (serverWarnings.wordLimitWarnings >= 5) { // Limite de 5 avisos
-            await disconnectServer(message); // Desconecta o servidor se atingir o limite
-            return;
-        }
+const messageWordCount = message.content.split(/\s+/).length;
+
+if (messageWordCount > MAX_WORDS) {
+    // Calcula o número restante de avisos
+    const remainingWarnings = 5 - serverWarnings.wordLimitWarnings;
+
+    const wordLimitEmbed = new EmbedBuilder()
+        .setColor('#FFFF00') // Cor do embed para limite de palavras (amarelo)
+        .setTitle('⚠️ Aviso')
+        .setDescription(`Sua mensagem excede o limite de ${MAX_WORDS} palavras. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+        .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+
+    await message.channel.send({ embeds: [wordLimitEmbed] });
+
+    // Incrementa o contador de avisos por limite de palavras
+    serverWarnings.wordLimitWarnings += 1;
+
+    // Verifica se o número de avisos por limite de palavras ultrapassa o limite
+    if (serverWarnings.wordLimitWarnings >= 5) { // Limite de 5 avisos
+        await disconnectServer(message); // Desconecta o servidor se atingir o limite
+        return; // Retorna após desconectar
     }
-
+}
+    
+ 
 }); // Fechamento do evento 'messageCreate'
 
 // Função para desconectar o servidor automaticamente
@@ -832,7 +854,136 @@ desbanir: {
         }
     },
 },
-};
+    
+mutar: {
+    description: 'Muta um usuário em todas as conexões.',
+    execute: async (message, args) => {
+        if (message.author.id !== OWNER_ID) {
+            const embed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❌ Permissão Negada')
+                .setDescription('Apenas o dono do bot pode usar este comando.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            return message.channel.send({ embeds: [embed] });
+        }
+
+        const user = message.mentions.users.first();
+        if (!user) {
+            const embed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❗ Usuário Não Mencionado')
+                .setDescription('Por favor, mencione o usuário para mutar.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            return message.channel.send({ embeds: [embed] });
+        }
+
+        if (!mutedUsers.includes(user.id)) {
+            mutedUsers.push(user.id);
+            saveConnections();
+
+            const successEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('🔇 Usuário Mutado')
+                .setDescription(`O usuário **${user.tag}** foi mutado com sucesso.`)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            // Envia a mensagem para todos os canais conectados globalmente
+            globalConnections.forEach((connection) => {
+                client.channels.cache.get(connection).send({ embeds: [successEmbed] });
+            });
+        } else {
+            const alreadyMutedEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('⚠️ Usuário Já Mutado')
+                .setDescription('Este usuário já está na lista de mutados.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            message.channel.send({ embeds: [alreadyMutedEmbed] });
+        }
+    },
+},
+
+desmutar: {
+    description: 'Desmuta um usuário em todas as conexões.',
+    execute: async (message, args) => {
+        if (message.author.id !== OWNER_ID) {
+            const embed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❌ Permissão Negada')
+                .setDescription('Apenas o dono do bot pode usar este comando.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            return message.channel.send({ embeds: [embed] });
+        }
+
+        const user = message.mentions.users.first();
+        if (!user) {
+            const embed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❗ Usuário Não Mencionado')
+                .setDescription('Por favor, mencione o usuário para desmutar.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            return message.channel.send({ embeds: [embed] });
+        }
+
+        const index = mutedUsers.indexOf(user.id);
+        if (index !== -1) {
+            mutedUsers.splice(index, 1);
+            saveConnections();
+
+            const unmuteSuccessEmbed = new EmbedBuilder()
+                .setColor('#00FF00')
+                .setTitle('🔊 Usuário Desmutado')
+                .setDescription(`O usuário **${user.tag}** foi desmutado com sucesso.`)
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            // Envia a mensagem para todos os canais conectados globalmente
+            globalConnections.forEach((connection) => {
+                client.channels.cache.get(connection).send({ embeds: [unmuteSuccessEmbed] });
+            });
+        } else {
+            const notMutedEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('⚠️ Usuário Não Mutado')
+                .setDescription('Este usuário não está na lista de mutados.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            message.channel.send({ embeds: [notMutedEmbed] });
+        }
+    },
+},
+
+
+}; //fechamento de comandos 
 
 /// Parte 5Gerenciamento de eventos e compartilhamento de mensagens
 client.once(Events.ClientReady, () => {
@@ -887,24 +1038,26 @@ if (command) {
 }
 // Compartilhamento global de mensagens
 if (globalConnections.includes(message.channel.id)) {
-for (const targetChannelId of globalConnections) {
-if (targetChannelId !== message.channel.id) {
-const targetChannel = await client.channels.fetch(targetChannelId);
-if (targetChannel) {
-// Conteúdo da mensagem
-let embedDescription = message.content || "Mensagem sem conteúdo.";
-const embed = new EmbedBuilder()
-.setColor('#3498db')
-.setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-.setDescription(embedDescription)
-.setFooter({
-text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
+    // Verifica se o autor da mensagem está na lista de usuários mutados
+    if (!mutedUsers.includes(message.author.id) && !bannedServers.includes(message.guild.id)) {
+        for (const targetChannelId of globalConnections) {
+            if (targetChannelId !== message.channel.id) {
+                const targetChannel = await client.channels.fetch(targetChannelId);
+                if (targetChannel) {
+                    // Conteúdo da mensagem
+                    let embedDescription = message.content || "Mensagem sem conteúdo.";
+                    const embed = new EmbedBuilder()
+                        .setColor('#3498db')
+                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+                        .setDescription(embedDescription)
+                        .setFooter({
+                            text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                        })
+                        .setTimestamp();
 
-await targetChannel.send({ embeds: [embed] });
-               
+                    await targetChannel.send({ embeds: [embed] });
+              
 // Responder a mensagem original mencionando o autor
 if (message.reference && message.reference.messageId) {
 const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
@@ -1002,6 +1155,7 @@ const emojiEmbed = new EmbedBuilder()
 
 await targetChannel.send({ embeds: [emojiEmbed] });           
 
+}
 }
 }
 }
