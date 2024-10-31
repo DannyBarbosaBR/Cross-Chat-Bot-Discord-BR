@@ -19,7 +19,7 @@ import fs from 'fs';
 //config();
 const TOKEN = ;
 const CLIENT_SECRET = ;
-const WEBHOOK_URL = `https://discord.com/api/webhooks/1292800072379011072/MILo8fEE3rB7fKErdIM5CbYObHtGCYQ8fOGhrQfLboeoUcB_pMmLQWqQlvSUQgHHOwSn';`;
+const WEBHOOK_URL = `';`;
 const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
 // Limite de palavras
@@ -190,7 +190,8 @@ client.on('messageCreate', async (message) => {
         const remainingWarnings = 5 - serverWarnings.forbiddenWordWarnings;
         const warningEmbed = new EmbedBuilder()
             .setColor('#FF0000') // Cor do embed para aviso (vermelho)
-            .setDescription(`🚫 Aviso: Palavras proibidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setTitle('🚫 Aviso:')
+            .setDescription(`Palavras proibidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [warningEmbed] });
@@ -219,7 +220,8 @@ client.on('messageCreate', async (message) => {
         const remainingWarnings = 5 - serverWarnings.repeatedMessageWarnings;
         const repeatWarningEmbed = new EmbedBuilder()
             .setColor('#FF0000')
-            .setDescription(`🚫 Aviso: Mensagens repetidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setTitle('🚫 Aviso:')
+            .setDescription(`Mensagens repetidas não são permitidas. Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [repeatWarningEmbed] });
@@ -233,16 +235,15 @@ client.on('messageCreate', async (message) => {
             return;
         }
     }
-
-    // Limite de palavras
-  //  const MAX_WORDS = 50; // Defina o número máximo de palavras permitidas
+    
     const messageWordCount = message.content.split(/\s+/).length;
     
     if (messageWordCount > MAX_WORDS) {
         const remainingWarnings = 5 - serverWarnings.wordLimitWarnings;
         const wordLimitEmbed = new EmbedBuilder()
             .setColor('#FFFF00') // Cor do embed para limite de palavras (amarelo)
-            .setDescription(`⚠️ Aviso: Sua mensagem excede o limite de ${MAX_WORDS} palavras. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setTitle('⚠️ Aviso:')
+            .setDescription(`Sua mensagem excede o limite de ${MAX_WORDS} palavras. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [wordLimitEmbed] });
@@ -293,7 +294,8 @@ execute: (message) => {
 const embed = new EmbedBuilder()
 .setColor('#800080')
 .setTitle('🌠 Danny Barbosa')
-.setDescription('🌟 Criado por <@1067849662347878401> ! \n [Acesse o Github do projeto!](https://github.com/DannyBarbosaBR/Cross-Chat-Bot-Discord-BR/) 😎')
+.setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+.setDescription('🌟 Criado por <@1067849662347878401> ! \n [Acesse o Github do projeto!](https://github.com/DannyBarbosaBR/Cross-Chat-Bot-Discord-BR/)')
 .setFooter({
 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -410,7 +412,8 @@ const serverList = client.guilds.cache.map(guild => `${guild.name} (ID: ${guild.
 const embed = new EmbedBuilder()
 .setColor('#2E8B57')
 .setTitle('🌍 Servidores Globlais')
-.setDescription(`Conectado em ${serverCount} servidores:\n\n${serverList}\n\nServidor de suporte: [Danny Barbosa](https://discord.gg/8GWFWNmjTa)`)
+.setDescription(`Conectado em ${serverCount} servidores:\n\n${serverList}\n\n [Acesse o Github do projeto!](https://github.com/DannyBarbosaBR/Cross-Chat-Bot-Discord-BR/)
+`)
 .setFooter({
 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -419,10 +422,25 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 message.channel.send({ embeds: [embed] });
 }, // Corrigido: removeu o ponto e vírgula aqui
 },
-    
 global: {
     description: 'Conecta o canal atual a outros servidores.',
     execute: async (message) => {
+        // Verifica se o servidor está banido
+        if (bannedServers.includes(message.guild.id)) {
+            const bannedServerEmbed = new EmbedBuilder()
+                .setColor('#FF0000')
+                .setTitle('❌ Servidor Banido')
+                .setDescription('Este servidor não tem permissão para usar este comando.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+
+            return message.channel.send({ embeds: [bannedServerEmbed] });
+        }
+
+        // Verifica se o usuário tem permissão para usar o comando
         if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
             const noPermissionEmbed = new EmbedBuilder()
                 .setColor('#FF0000')
@@ -455,6 +473,7 @@ global: {
         const connectedEmbed = new EmbedBuilder()
             .setColor('#00FF00')
             .setTitle('🌐 Canal Conectado')
+            .setThumbnail(message.guild.iconURL({ dynamic: true, format: 'png', size: 1024 }))
             .setDescription(`Canal <#${message.channel.id}> conectado globalmente. \nPara mais detalhes, use \`!informações\`.`)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
@@ -511,7 +530,7 @@ global: {
         saveConnections();
     },
 },
-
+    
 conectar: {
     description: 'Conecta o canal a um outro do servidor',
     execute: (message) => {
@@ -1051,7 +1070,7 @@ console.log(`Bot está ativo como ${client.user.tag}`);
 // Mensagem de inicialização embutida
 const embed = new EmbedBuilder()
 .setTitle("📺 Bot Sintonizado!")
-.setDescription("O Danny-Chat está **no ar** e pronto para usar! 🍿")
+.setDescription("🌠 Danny-Chat está **no ar** e pronto para usar!")
 .setColor(0x00FF00)
 .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
 .setTimestamp()
