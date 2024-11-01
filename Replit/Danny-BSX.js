@@ -1280,8 +1280,10 @@ client.on('messageCreate', async message => {
 
         if (query) {
             try {
-                // Tenta buscar na Wikipédia
-                const wikiResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+                const normalizedQuery = query.toLowerCase();
+
+                // Busca na Wikipédia
+                const wikiResponse = await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(normalizedQuery)}`);
                 const wikiData = await wikiResponse.json();
 
                 if (wikiData.type === 'standard') {
@@ -1292,45 +1294,116 @@ client.on('messageCreate', async message => {
                         .setDescription(wikiData.extract)
                         .setThumbnail(wikiData.thumbnail ? wikiData.thumbnail.source : null)
                         .setFooter({
-                            text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                            text: `🌠 Resposta da Wikipédia | ${formatDateTime()}`,
                             iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
                         })
                         .setTimestamp();
                     
                     message.reply({ embeds: [embed] });
-                } else {
-                    // Se não encontrar na Wikipédia, busca no DuckDuckGo
-                    const duckDuckGoResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
-                    const duckData = await duckDuckGoResponse.json();
-
-                    if (duckData.Abstract) {
-                        const embed = new EmbedBuilder()
-                            .setColor('#800080')
-                            .setTitle(`🔎 ${duckData.Heading}`)
-                            .setURL(duckData.AbstractURL)
-                            .setDescription(duckData.Abstract)
-                            .setFooter({
-                                text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
-                                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                            })
-                            .setTimestamp();
-                        
-                        message.reply({ embeds: [embed] });
-                    } else {
-                        // Resposta se nenhuma das fontes tiver resultado
-                        const embed = new EmbedBuilder()
-                            .setColor('#FF4500')
-                            .setTitle("❌ Resultado não encontrado")
-                            .setDescription("Não encontrei uma resposta exata para sua pesquisa na Wikipédia ou DuckDuckGo. \nTente ser mais exato!")
-                            .setFooter({
-                                text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
-                                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                            })
-                            .setTimestamp();
-                        
-                        message.reply({ embeds: [embed] });
-                    }
+                    return;
                 }
+
+                // Busca no DuckDuckGo
+                const duckDuckGoResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(normalizedQuery)}&format=json&no_redirect=1&no_html=1`);
+                const duckData = await duckDuckGoResponse.json();
+
+                if (duckData.Abstract) {
+                    const embed = new EmbedBuilder()
+                        .setColor('#800080')
+                        .setTitle(`🔎 ${duckData.Heading}`)
+                        .setURL(duckData.AbstractURL)
+                        .setDescription(duckData.Abstract)
+                        .setFooter({
+                            text: `🌠 Resposta do DuckDuckGo | ${formatDateTime()}`,
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                        })
+                        .setTimestamp();
+                    
+                    message.reply({ embeds: [embed] });
+                    return;
+                }
+
+                // Busca no Wikidata
+                const wikidataResponse = await fetch(`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(normalizedQuery)}&language=pt&format=json`);
+                const wikidataData = await wikidataResponse.json();
+
+                if (wikidataData.search && wikidataData.search.length > 0) {
+                    const item = wikidataData.search[0];
+                    const embed = new EmbedBuilder()
+                        .setColor('#800080')
+                        .setTitle(`🔎 ${item.label}`)
+                        .setURL(`https://www.wikidata.org/wiki/${item.id}`)
+                        .setDescription(item.description || "Descrição não disponível.")
+                        .setFooter({
+                            text: `🌠 Resposta do Wikidata | ${formatDateTime()}`,
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                        })
+                        .setTimestamp();
+
+                    message.reply({ embeds: [embed] });
+                    return;
+                }
+
+                // Busca na Open Library (se o termo pode estar relacionado a livros)
+                const openLibraryResponse = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(normalizedQuery)}`);
+                const openLibraryData = await openLibraryResponse.json();
+
+                if (openLibraryData.docs && openLibraryData.docs.length > 0) {
+                    const book = openLibraryData.docs[0];
+                    const embed = new EmbedBuilder()
+                        .setColor('#800080')
+                        .setTitle(`📚 ${book.title}`)
+                        .setURL(`https://openlibrary.org${book.key}`)
+                        .setDescription(`Autor: ${book.author_name ? book.author_name.join(', ') : 'Desconhecido'}`)
+                        .setFooter({
+                            text: `🌠 Resposta da Open Library | ${formatDateTime()}`,
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                        })
+                        .setTimestamp();
+
+                    message.reply({ embeds: [embed] });
+                    return;
+                }
+
+                // Busca no Contextual Web Search (para uma pesquisa geral na web)
+                const contextualWebResponse = await fetch(`https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/Search/WebSearchAPI?q=${encodeURIComponent(normalizedQuery)}&pageNumber=1&pageSize=1&autoCorrect=true`, {
+                    method: 'GET',
+                    headers: {
+                        'X-RapidAPI-Key': 'SUA_RAPIDAPI_KEY',
+                        'X-RapidAPI-Host': 'contextualwebsearch-websearch-v1.p.rapidapi.com'
+                    }
+                });
+                const contextualData = await contextualWebResponse.json();
+
+                if (contextualData.value && contextualData.value.length > 0) {
+                    const result = contextualData.value[0];
+                    const embed = new EmbedBuilder()
+                        .setColor('#800080')
+                        .setTitle(`🌐 ${result.title}`)
+                        .setURL(result.url)
+                        .setDescription(result.description)
+                        .setFooter({
+                            text: `🌠 Resposta da Web | ${formatDateTime()}`,
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                        })
+                        .setTimestamp();
+
+                    message.reply({ embeds: [embed] });
+                    return;
+                }
+
+                // Caso nenhum resultado seja encontrado
+                const embed = new EmbedBuilder()
+                    .setColor('#FF4500')
+                    .setTitle("❌ Resultado não encontrado")
+                    .setDescription("Não encontrei uma resposta exata para sua pesquisa nas fontes disponíveis. \nTente ser mais específico na pesquisa!")
+                    .setFooter({
+                        text: `🌠 Resposta | ${formatDateTime()}`,
+                        iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                    })
+                    .setTimestamp();
+
+                message.reply({ embeds: [embed] });
             } catch (error) {
                 console.error(error);
                 // Embed de erro
@@ -1339,11 +1412,11 @@ client.on('messageCreate', async message => {
                     .setTitle("Erro ao buscar informação")
                     .setDescription("Ocorreu um erro ao tentar buscar a informação. Por favor, tente novamente mais tarde.")
                     .setFooter({
-                        text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                        text: `🌠 Resposta | ${formatDateTime()}`,
                         iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
                     })
                     .setTimestamp();
-                
+
                 message.reply({ embeds: [embed] });
             }
         } else {
@@ -1353,11 +1426,11 @@ client.on('messageCreate', async message => {
                 .setTitle("Instruções")
                 .setDescription("Por favor, inclua uma pergunta ao lado da menção para que eu possa buscar a informação!")
                 .setFooter({
-                    text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                    text: `🌠 Resposta | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
                 })
                 .setTimestamp();
-            
+
             message.reply({ embeds: [embed] });
         }
     }
