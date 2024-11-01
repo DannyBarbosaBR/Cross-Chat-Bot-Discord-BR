@@ -3,6 +3,7 @@ import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import fs from 'fs';
 
+
 // Manter o bot ativo no Replit
 //import express from 'express';
 //const app = express();
@@ -1271,6 +1272,97 @@ channel.send({ embeds: [embed] }).catch(console.error);
 }
 });
 });
+
+
+client.on('messageCreate', async message => {
+    if (message.mentions.has(client.user) && !message.author.bot) {
+        const query = message.content.replace(/<@!?(\d+)>/g, '').trim();
+
+        if (query) {
+            try {
+                // Tenta buscar na Wikipédia
+                const wikiResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+                const wikiData = await wikiResponse.json();
+
+                if (wikiData.type === 'standard') {
+                    const embed = new EmbedBuilder()
+                        .setColor('#800080')
+                        .setTitle(`🔎 ${wikiData.title}`)
+                        .setURL(wikiData.content_urls.desktop.page)
+                        .setDescription(wikiData.extract)
+                        .setThumbnail(wikiData.thumbnail ? wikiData.thumbnail.source : null)
+                        .setFooter({
+                            text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                        })
+                        .setTimestamp();
+                    
+                    message.reply({ embeds: [embed] });
+                } else {
+                    // Se não encontrar na Wikipédia, busca no DuckDuckGo
+                    const duckDuckGoResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
+                    const duckData = await duckDuckGoResponse.json();
+
+                    if (duckData.Abstract) {
+                        const embed = new EmbedBuilder()
+                            .setColor('#800080')
+                            .setTitle(`🔎 ${duckData.Heading}`)
+                            .setURL(duckData.AbstractURL)
+                            .setDescription(duckData.Abstract)
+                            .setFooter({
+                                text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                            })
+                            .setTimestamp();
+                        
+                        message.reply({ embeds: [embed] });
+                    } else {
+                        // Resposta se nenhuma das fontes tiver resultado
+                        const embed = new EmbedBuilder()
+                            .setColor('#FF4500')
+                            .setTitle("❌ Resultado não encontrado")
+                            .setDescription("Não encontrei uma resposta exata para sua pesquisa na Wikipédia ou DuckDuckGo. \nTente ser mais exato!")
+                            .setFooter({
+                                text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                            })
+                            .setTimestamp();
+                        
+                        message.reply({ embeds: [embed] });
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                // Embed de erro
+                const embed = new EmbedBuilder()
+                    .setColor('#FF0000')
+                    .setTitle("Erro ao buscar informação")
+                    .setDescription("Ocorreu um erro ao tentar buscar a informação. Por favor, tente novamente mais tarde.")
+                    .setFooter({
+                        text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                        iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                    })
+                    .setTimestamp();
+                
+                message.reply({ embeds: [embed] });
+            }
+        } else {
+            // Embed instruindo a incluir uma pergunta
+            const embed = new EmbedBuilder()
+                .setColor('#FFA500')
+                .setTitle("Instruções")
+                .setDescription("Por favor, inclua uma pergunta ao lado da menção para que eu possa buscar a informação!")
+                .setFooter({
+                    text: `🌠 Resposta do Danny-Bot | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                })
+                .setTimestamp();
+            
+            message.reply({ embeds: [embed] });
+        }
+    }
+});
+
 /// Shutdown Event - Quando o bot é desligado
 
 client.login(TOKEN)
