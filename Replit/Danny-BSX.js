@@ -328,34 +328,145 @@ message.channel.send({ embeds: [embed] });
 },
 },
 
-informações: {
-description: 'Mostra informações sobre o bot.',
-execute: async (message) => {
-const infoEmbed = new EmbedBuilder()
-.setColor('#00FF00') // Cor do embed para informações (verde)
-.setTitle('🌐 Informações sobre o Danny Chat')
-.setDescription(`
-               O Danny Chat é um bot que conecta servidores, permitindo que as mensagens enviadas em um canal sejam visíveis em todos os servidores conectados.
-               
-               **Como Funciona:**
-               - Ao enviar uma mensagem neste canal, ela será replicada em todos os canais que estão conectados globalmente.
-               - Para que o bot consiga enviar sua mensagem, ele transforma você em "app". Isso é necessário, pois sem essa transformação, a mensagem não poderia ser enviada para os outros servidores.
-               
-               **Conectando Canais:**
-               - Você pode conectar seu canal a outros servidores utilizando o comando \`!global\`.
-               - Uma vez conectado, todas as mensagens enviadas aqui serão compartilhadas com os servidores que fazem parte da conexão.
-           `)
-.setFooter({
-text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
+buscar: {
+    description: 'Busca informações em fontes confiáveis.',
+    async execute(message, ...args) {
+        // Verifica se o primeiro argumento existe e não é vazio
+        const query = args.join(' ').trim(); // Junte todos os argumentos e remova espaços
 
-await message.channel.send({ embeds: [infoEmbed] });
-},
-},
+        // Se a query estiver vazia, mostra instruções
+        if (!query) {
+            const embed = new EmbedBuilder()
+                .setColor('#FFD700')  // Amarelo
+                .setTitle("⚠️ Instruções")
+                .setDescription("Por favor, forneça uma palavra para que eu possa buscar informações.\nTente usar palavras-chave específicas.")
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                })
+                .setTimestamp();
 
-horário: {
+            return message.reply({ embeds: [embed] }); // Retorna aqui se não houver query
+        }
+
+        try {
+            // Primeira tentativa na Wikipédia (em português)
+            const wikiResponse = await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}?redirects=true&origin=*`);
+            const wikiData = await wikiResponse.json();
+
+            if (wikiData.type === 'standard') {
+                const embed = new EmbedBuilder()
+                    .setColor('#00FFFF')  // Ciano
+                    .setTitle(`📖 ${wikiData.title}`)
+                    .setThumbnail(wikiData.thumbnail ? wikiData.thumbnail.source : 'https://pt.wikipedia.org/static/images/project-logos/ptwiki.png')
+                    .setDescription(`${wikiData.extract}\n[Saiba mais no Wikipédia](https://pt.wikipedia.org/wiki/${encodeURIComponent(query)})`)
+                    .setFooter({
+                        text: `📖 Wikipédia | ${formatDateTime()}`,
+                        iconURL: 'https://pt.wikipedia.org/static/images/project-logos/ptwiki.png'
+                    })
+                    .setTimestamp();
+
+                return message.reply({ embeds: [embed] });
+            }
+
+            // Se não encontrar na Wikipédia, busca no DuckDuckGo
+            const duckDuckGoResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
+            const duckData = await duckDuckGoResponse.json();
+
+            if (duckData.Abstract) {
+                const embed = new EmbedBuilder()
+                    .setColor('#00FFFF')  // Ciano
+                    .setTitle(`🔍 ${duckData.Heading}`)
+                    .setThumbnail('https://duckduckgo.com/assets/logo_homepage.normal.v108.svg')
+                    .setDescription(`${duckData.Abstract}\n[Saiba mais no DuckDuckGo](${duckData.AbstractURL})`)
+                    .setFooter({
+                        text: `🌐 DuckDuckGo | ${formatDateTime()}`,
+                        iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                    })
+                    .setTimestamp();
+
+                return message.reply({ embeds: [embed] });
+            }
+
+            // Busca na Open Library se as outras fontes falharem
+            const openLibraryResponse = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`);
+            const libraryData = await openLibraryResponse.json();
+
+            if (libraryData.docs && libraryData.docs.length > 0) {
+                const book = libraryData.docs[0];
+                const embed = new EmbedBuilder()
+                    .setColor('#00FFFF')  // Ciano
+                    .setTitle(`📚 ${book.title}`)
+                    .setThumbnail(`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`)
+                    .setDescription(`Autor: ${book.author_name ? book.author_name.join(", ") : "Desconhecido"}\nAno: ${book.first_publish_year || "Desconhecido"}\n[Saiba mais no Open Library](https://openlibrary.org${book.key})`)
+                    .setFooter({
+                        text: `📖 Open Library | ${formatDateTime()}`,
+                        iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                    })
+                    .setTimestamp();
+
+                return message.reply({ embeds: [embed] });
+            }
+
+            // Mensagem de nenhuma informação encontrada
+            const embedNenhumaInfo = new EmbedBuilder()
+                .setColor('#FF0000')  // Vermelho
+                .setTitle("❌ Nenhuma Informação Encontrada")
+                .setDescription("Nenhuma informação encontrada para sua pesquisa. \nPor favor, tente ser mais específico ou forneça mais detalhes:\n- Use palavras-chave mais específicas.\n- Verifique a ortografia.\n- Experimente outros termos relacionados.")
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                })
+                .setTimestamp();
+
+            return message.reply({ embeds: [embedNenhumaInfo] });
+
+        } catch (error) {
+            console.error(error);
+            // Mensagem de erro ao executar o comando
+            const embedErro = new EmbedBuilder()
+                .setColor('#FF0000')  // Vermelho
+                .setTitle("❌ Erro Ao Executar Comando")
+                .setDescription("Ocorreu um erro ao tentar buscar a informação. \nPor favor, tente novamente mais tarde!")
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+                })
+                .setTimestamp();
+
+            return message.reply({ embeds: [embedErro] });
+        }
+    },
+},
+    
+info: {
+    description: 'Exibe informações sobre a conexão.',
+    async execute(message) {
+        const embedInfo = new EmbedBuilder()
+            .setColor('#00FFFF')  // Cor ciano
+            .setTitle("🌍 Informações Do Chat Global")
+            .setDescription(`
+O Danny Chat é um bot que conecta servidores, permitindo que as mensagens enviadas em um canal sejam visíveis em todos os servidores conectados.
+
+**Como Funciona:**
+- Ao enviar uma mensagem neste canal, ela será replicada em todos os canais que estão conectados globalmente.
+- Para que o bot consiga enviar sua mensagem, ele transforma você em "app". Isso é necessário, pois sem essa transformação, a mensagem não poderia ser enviada para os outros servidores.
+
+**Conectando Canais:**
+- Você pode conectar seu canal a outros servidores utilizando o comando \`!global\`.
+- Uma vez conectado, todas as mensagens enviadas aqui serão compartilhadas com os servidores que fazem parte da conexão.
+            `)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+            })
+            .setTimestamp();
+
+        return message.reply({ embeds: [embedInfo] });
+    },
+},
+    
+tempo: {
 description: 'Mostra o horário de funcionamento atual.',
 execute: async (message) => {
 const hoje = new Date();
@@ -587,7 +698,7 @@ global: {
     },
 },
     
-conectar: {
+juntar: {
     description: 'Conecta o canal a um outro do servidor',
     execute: (message) => {
         if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
@@ -643,7 +754,7 @@ conectar: {
     },
 },
     
-desconectar: {
+sair: {
     description: 'Desconecta um canal conectado.',
     async execute(message) {
         const channelId = message.channel.id;
@@ -728,7 +839,6 @@ message.channel.send({ embeds: [embed] });
 },
 },
     
-//modificacao
 banir: {
     description: 'Bane um servidor da lista de conexões.',
     execute: async (message, args) => {
@@ -1273,168 +1383,6 @@ channel.send({ embeds: [embed] }).catch(console.error);
 });
 });
 
-
-client.on('messageCreate', async message => {
-    if (message.mentions.has(client.user) && !message.author.bot) {
-        const query = message.content.replace(/<@!?(\d+)>/g, '').trim();
-
-        if (query) {
-            try {
-                const normalizedQuery = query.toLowerCase();
-
-                // Busca na Wikipédia
-                const wikiResponse = await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(normalizedQuery)}`);
-                const wikiData = await wikiResponse.json();
-
-                if (wikiData.type === 'standard') {
-                    const embed = new EmbedBuilder()
-                        .setColor('#800080')
-                        .setTitle(`🔎 ${wikiData.title}`)
-                        .setURL(wikiData.content_urls.desktop.page)
-                        .setDescription(wikiData.extract)
-                        .setThumbnail(wikiData.thumbnail ? wikiData.thumbnail.source : null)
-                        .setFooter({
-                            text: `🌠 Resposta da Wikipédia | ${formatDateTime()}`,
-                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                        })
-                        .setTimestamp();
-                    
-                    message.reply({ embeds: [embed] });
-                    return;
-                }
-
-                // Busca no DuckDuckGo
-                const duckDuckGoResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(normalizedQuery)}&format=json&no_redirect=1&no_html=1`);
-                const duckData = await duckDuckGoResponse.json();
-
-                if (duckData.Abstract) {
-                    const embed = new EmbedBuilder()
-                        .setColor('#800080')
-                        .setTitle(`🔎 ${duckData.Heading}`)
-                        .setURL(duckData.AbstractURL)
-                        .setDescription(duckData.Abstract)
-                        .setFooter({
-                            text: `🌠 Resposta do DuckDuckGo | ${formatDateTime()}`,
-                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                        })
-                        .setTimestamp();
-                    
-                    message.reply({ embeds: [embed] });
-                    return;
-                }
-
-                // Busca no Wikidata
-                const wikidataResponse = await fetch(`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(normalizedQuery)}&language=pt&format=json`);
-                const wikidataData = await wikidataResponse.json();
-
-                if (wikidataData.search && wikidataData.search.length > 0) {
-                    const item = wikidataData.search[0];
-                    const embed = new EmbedBuilder()
-                        .setColor('#800080')
-                        .setTitle(`🔎 ${item.label}`)
-                        .setURL(`https://www.wikidata.org/wiki/${item.id}`)
-                        .setDescription(item.description || "Descrição não disponível.")
-                        .setFooter({
-                            text: `🌠 Resposta do Wikidata | ${formatDateTime()}`,
-                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                        })
-                        .setTimestamp();
-
-                    message.reply({ embeds: [embed] });
-                    return;
-                }
-
-                // Busca na Open Library (se o termo pode estar relacionado a livros)
-                const openLibraryResponse = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(normalizedQuery)}`);
-                const openLibraryData = await openLibraryResponse.json();
-
-                if (openLibraryData.docs && openLibraryData.docs.length > 0) {
-                    const book = openLibraryData.docs[0];
-                    const embed = new EmbedBuilder()
-                        .setColor('#800080')
-                        .setTitle(`📚 ${book.title}`)
-                        .setURL(`https://openlibrary.org${book.key}`)
-                        .setDescription(`Autor: ${book.author_name ? book.author_name.join(', ') : 'Desconhecido'}`)
-                        .setFooter({
-                            text: `🌠 Resposta da Open Library | ${formatDateTime()}`,
-                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                        })
-                        .setTimestamp();
-
-                    message.reply({ embeds: [embed] });
-                    return;
-                }
-
-                // Busca no Contextual Web Search (para uma pesquisa geral na web)
-                const contextualWebResponse = await fetch(`https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/Search/WebSearchAPI?q=${encodeURIComponent(normalizedQuery)}&pageNumber=1&pageSize=1&autoCorrect=true`, {
-                    method: 'GET',
-                    headers: {
-                        'X-RapidAPI-Key': 'SUA_RAPIDAPI_KEY',
-                        'X-RapidAPI-Host': 'contextualwebsearch-websearch-v1.p.rapidapi.com'
-                    }
-                });
-                const contextualData = await contextualWebResponse.json();
-
-                if (contextualData.value && contextualData.value.length > 0) {
-                    const result = contextualData.value[0];
-                    const embed = new EmbedBuilder()
-                        .setColor('#800080')
-                        .setTitle(`🌐 ${result.title}`)
-                        .setURL(result.url)
-                        .setDescription(result.description)
-                        .setFooter({
-                            text: `🌠 Resposta da Web | ${formatDateTime()}`,
-                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                        })
-                        .setTimestamp();
-
-                    message.reply({ embeds: [embed] });
-                    return;
-                }
-
-                // Caso nenhum resultado seja encontrado
-                const embed = new EmbedBuilder()
-                    .setColor('#FF4500')
-                    .setTitle("❌ Resultado não encontrado")
-                    .setDescription("Não encontrei uma resposta exata para sua pesquisa nas fontes disponíveis. \nTente ser mais específico na pesquisa!")
-                    .setFooter({
-                        text: `🌠 Resposta | ${formatDateTime()}`,
-                        iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                    })
-                    .setTimestamp();
-
-                message.reply({ embeds: [embed] });
-            } catch (error) {
-                console.error(error);
-                // Embed de erro
-                const embed = new EmbedBuilder()
-                    .setColor('#FF0000')
-                    .setTitle("Erro ao buscar informação")
-                    .setDescription("Ocorreu um erro ao tentar buscar a informação. Por favor, tente novamente mais tarde.")
-                    .setFooter({
-                        text: `🌠 Resposta | ${formatDateTime()}`,
-                        iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                    })
-                    .setTimestamp();
-
-                message.reply({ embeds: [embed] });
-            }
-        } else {
-            // Embed instruindo a incluir uma pergunta
-            const embed = new EmbedBuilder()
-                .setColor('#FFA500')
-                .setTitle("Instruções")
-                .setDescription("Por favor, inclua uma pergunta ao lado da menção para que eu possa buscar a informação!")
-                .setFooter({
-                    text: `🌠 Resposta | ${formatDateTime()}`,
-                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
-                })
-                .setTimestamp();
-
-            message.reply({ embeds: [embed] });
-        }
-    }
-});
 
 /// Shutdown Event - Quando o bot é desligado
 
