@@ -23,6 +23,7 @@ const CLIENT_SECRET = ;
 const WEBHOOK_URL = `';`;
 const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
+
 // Limite de palavras
 const MAX_WARNINGS = 3; // Número máximo de avisos permitidos por servidor
 const MAX_WORDS = 50; // Limite de palavras
@@ -1240,7 +1241,7 @@ desmutar: {
 
 }; //fechamento de comandos 
 
-/// Parte 5Gerenciamento de eventos e compartilhamento de mensagens
+/// Parte 5 Gerenciamento de eventos e compartilhamento de mensagens
 client.once(Events.ClientReady, () => {
 console.log(`🌠 ${client.user.tag} está online`);
 loadConnections();
@@ -1291,28 +1292,41 @@ if (command) {
     message.channel.send({ embeds: [notFoundEmbed] });
 }
 }
+
+// Lista de prefixos comuns usados em bots
+const botPrefixes = ["!", "/", ".", "-", "$", "~", "?", "+", "%", "&", "*", "#"]; // Prefixos adicionados
+
 // Compartilhamento global de mensagens
-if (globalConnections.includes(message.channel.id)) {
-    // Verifica se o autor da mensagem está na lista de usuários mutados
-    if (!mutedUsers.includes(message.author.id) && !bannedServers.includes(message.guild.id)) {
+if (globalConnections.includes(message.channel.id)) { // Verifica se o canal atual está na lista de conexões globais
+    // Verifica se o autor da mensagem está na lista de usuários mutados, se o servidor não está banido,
+    // e se a mensagem não começa com nenhum prefixo de bot
+    if (
+        !mutedUsers.includes(message.author.id) && // Verificação de usuário mutado
+        !bannedServers.includes(message.guild.id) && // Verificação de servidor banido
+        !botPrefixes.some(prefix => message.content.startsWith(prefix)) // Ignora mensagens com prefixos de bot
+    ) {
+        // Itera sobre todos os canais conectados globalmente
         for (const targetChannelId of globalConnections) {
-            if (targetChannelId !== message.channel.id) {
-                const targetChannel = await client.channels.fetch(targetChannelId);
-                if (targetChannel) {
+            if (targetChannelId !== message.channel.id) { // Garante que não está enviando no mesmo canal
+                const targetChannel = await client.channels.fetch(targetChannelId); // Busca o canal de destino
+                if (targetChannel) { // Verifica se o canal é válido
+                    // Aguarda 2 segundos antes de enviar a mensagem
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Espera 2000 ms (2 segundos)
+
                     // Conteúdo da mensagem
-                    let embedDescription = message.content || "Mensagem sem conteúdo.";
+                    let embedDescription = message.content || "Mensagem sem conteúdo."; // Define conteúdo padrão se vazio
                     const embed = new EmbedBuilder()
-                        .setColor('#3498db')
-                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-                        .setDescription(embedDescription)
+                        .setColor('#3498db') // Cor do embed
+                        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() }) // Autor da mensagem
+                        .setDescription(embedDescription) // Descrição com o conteúdo da mensagem
                         .setFooter({
                             text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
-                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                            iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4', // Ícone do footer
                         })
-                        .setTimestamp();
-
-                    await targetChannel.send({ embeds: [embed] });
-              
+                        .setTimestamp(); // Marca de tempo da mensagem
+                    
+                    await targetChannel.send({ embeds: [embed] }); // Envia a mensagem embed para o canal de destino
+                                
 // Responder a mensagem original mencionando o autor
 if (message.reference && message.reference.messageId) {
 const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
