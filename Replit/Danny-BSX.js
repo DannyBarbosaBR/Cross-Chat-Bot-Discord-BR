@@ -532,6 +532,32 @@ message.channel.send({ embeds: [embed] });
 }, // Corrigido: removeu o ponto e vírgula aqui
 },
     
+info: {
+    description: 'Exibe informações sobre o Danny Chat.',
+    async execute(message) {
+        const embedInfo = new EmbedBuilder()
+            .setColor('#00FFFF')  // Cor ciano
+            .setTitle("🌍 Informações do Chat Global")
+            .setDescription(`
+O Danny Chat é um bot que conecta servidores, permitindo que as mensagens enviadas em um canal sejam visíveis em todos os servidores conectados.
+
+**Como Funciona:**
+- Ao enviar uma mensagem neste canal, ela será replicada em todos os canais que estão conectados globalmente.
+- Para que o bot consiga enviar sua mensagem, ele transforma você em "app". Isso é necessário, pois sem essa transformação, a mensagem não poderia ser enviada para os outros servidores.
+
+**Conectando Canais:**
+- Você pode conectar seu canal a outros servidores utilizando o comando \`!global\`.
+- Uma vez conectado, todas as mensagens enviadas aqui serão compartilhadas com os servidores que fazem parte da conexão.
+            `)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
+            })
+            .setTimestamp();
+
+        return message.reply({ embeds: [embedInfo] });
+    },
+},
     
 expulsos: {
     description: 'Mostra todos os expulsos da conexão.',
@@ -1212,7 +1238,6 @@ desmutar: {
     },
 },
 
-
 }; //fechamento de comandos 
 
 /// Parte 5Gerenciamento de eventos e compartilhamento de mensagens
@@ -1338,7 +1363,7 @@ await targetChannel.send({ embeds: [videoEmbed] });
 } else if (isFile) {
 const fileEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para outros tipos de arquivos (laranja)
-.setDescription(`📎 Arquivo compartilhado \n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
+.setDescription(`💾 Arquivo compartilhado \n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
 .setFooter({ text: `Arquivo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [fileEmbed] });
@@ -1468,7 +1493,6 @@ channel.send({ embeds: [embed] }).catch(console.error);
 }
 });
 });
-
 
 /// Shutdown Event - Quando o bot é desligado
 
