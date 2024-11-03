@@ -651,6 +651,7 @@ desligar: {
 juntar: {
     description: 'Junta mensagens de um canal a outro.',
     execute: async (message) => {
+        // Verificação de permissões
         if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // Vermelho para erro
@@ -702,11 +703,11 @@ juntar: {
         const messageListener = async (msg) => {
             if (msg.channel.id === message.channel.id && msg.author.id !== client.user.id) {
                 const embedMessage = new EmbedBuilder()
-                    .setColor('#3498db') // Azul claro
+                    .setColor('#1E90FF') // Azul escuro
                     .setAuthor({ name: msg.author.username, iconURL: msg.author.displayAvatarURL() })
                     .setDescription(msg.content || "Mensagem sem conteúdo.")
                     .setFooter({
-                        text: `🌎 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem
+                        text: `🔗 ${message.guild.name} | ${formatDateTime()}`, // Nome do servidor de origem com emoji
                         iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
                     })
                     .setTimestamp();
@@ -714,7 +715,9 @@ juntar: {
                 const targetChannelId = targetChannel.id;
                 const targetChannelToSend = await client.channels.fetch(targetChannelId);
                 if (targetChannelToSend) {
-                    await targetChannelToSend.send({ embeds: [embedMessage] });
+                    // Aguarda 2 segundos antes de enviar a mensagem
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Espera 2000 ms (2 segundos)
+                    await targetChannelToSend.send({ embeds: [embedMessage] }); // Envia a mensagem embed para o canal de destino
                 }
             }
         };
@@ -722,10 +725,10 @@ juntar: {
         // Adiciona o listener de mensagens
         message.client.on('messageCreate', messageListener);
 
-        saveConnections();
+        saveConnections(); // Salva as conexões
     },
 },
-    
+
 global: {
     description: 'Conecta o canal atual a outros servidores.',
     execute: async (message) => {
