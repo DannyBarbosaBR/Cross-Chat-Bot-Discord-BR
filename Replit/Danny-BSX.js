@@ -35,6 +35,7 @@ const warnedServers = new Map(); // Mapa para rastrear avisos por servidor
 //const CLIENT_SECRET = process.env.CLIENT_SECRET;
 //const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
+// Estruturas de armazenamento
 let channelConnections = {};
 let globalConnections = [];
 let bannedServers = [];
@@ -84,8 +85,22 @@ function saveConnections() {
         globalConnections,
         bannedServers,
         mutedUsers // Salva a lista de usuários mutados
-    }));
+    }, null, 4));
 }
+
+// Evento ao sair de um servidor
+client.on('guildDelete', async (guild) => {
+    // Limpa as informações do servidor ao sair
+    delete channelConnections[guild.id]; // Remove conexões específicas do servidor
+    globalConnections = globalConnections.filter(id => id !== guild.id); // Remove o ID do servidor das conexões globais
+
+    // Salva alterações após sair do servidor
+    saveConnections();
+    console.log(`Bot saiu do servidor: ${guild.name}`); // Log para referência
+});
+
+// Carrega as conexões ao iniciar o bot
+loadConnections();
 
 //parte 3 Funções utilitárias, como formatação de data e regras do servidor
 // Função que formata a data e hora corretamente
