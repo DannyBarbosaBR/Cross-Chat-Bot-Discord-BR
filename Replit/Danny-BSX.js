@@ -1392,7 +1392,8 @@ if (command) {
     message.channel.send({ embeds: [notFoundEmbed] });
 }
 }
-
+    
+    
 // Lista de prefixos comuns usados em bots
 const botPrefixes = ["!", "/", ".", "-", "$", "~", "?", "+", "%", "&", "*", "#"]; // Prefixos adicionados
 
@@ -1426,12 +1427,12 @@ if (globalConnections.includes(message.channel.id)) { // Verifica se o canal atu
                         .setTimestamp(); // Marca de tempo da mensagem
                     
                     await targetChannel.send({ embeds: [embed] }); // Envia a mensagem embed para o canal de destino
-                                
+                    
 // Responder a mensagem original mencionando o autor
 if (message.reference && message.reference.messageId) {
 const originalMessage = await message.channel.messages.fetch(message.reference.messageId);
 if (originalMessage) {
-const replyContent = `🔁 Resposta a ${originalMessage.author}:\n${originalMessage.content}`;
+const replyContent = `🔁 **Resposta a:**${originalMessage.author}:\n${originalMessage.content}`;
 
 // Criar um embed para a resposta
 const replyEmbed = new EmbedBuilder()
@@ -1455,7 +1456,7 @@ const isFile = !isImage && !isAudio && !isVideo;
 if (isImage) {
 const attachmentEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para imagens (laranja)
-.setDescription(`🖼️ Imagem compartilhada \n[Veja a imagem aqui](${attachment.url})`) // Link da imagem incluído na descrição
+.setDescription(`🖼️ **Imagem compartilhada:** \n[Veja a imagem aqui](${attachment.url})`) // Link da imagem incluído na descrição
 .setImage(attachment.url) // Imagem embutida no embed
 .setFooter({ text: `Imagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
@@ -1463,21 +1464,21 @@ await targetChannel.send({ embeds: [attachmentEmbed] });
 } else if (isAudio) {
 const audioEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para áudios (laranja)
-.setDescription(`🎶 Áudio compartilhado \n[Ouça o áudio aqui](${attachment.url})`) // Link do áudio incluído na descrição
+.setDescription(`🎶 **Áudio compartilhado:** \n[Ouça o áudio aqui](${attachment.url})`) // Link do áudio incluído na descrição
 .setFooter({ text: `Áudio enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [audioEmbed] });
 } else if (isVideo) {
 const videoEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para vídeos (laranja)
-.setDescription(`🎥 Vídeo compartilhado \n[Assista ao vídeo aqui](${attachment.url})`) // Link do vídeo incluído na descrição
+.setDescription(`🎥 **Vídeo compartilhado:** \n[Assista ao vídeo aqui](${attachment.url})`) // Link do vídeo incluído na descrição
 .setFooter({ text: `Vídeo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [videoEmbed] });
 } else if (isFile) {
 const fileEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para outros tipos de arquivos (laranja)
-.setDescription(`💾 Arquivo compartilhado \n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
+.setDescription(`💾 **Arquivo compartilhado:**\n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
 .setFooter({ text: `Arquivo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [fileEmbed] });
@@ -1492,7 +1493,7 @@ if (links) {
 for (const link of links) {
 const linkEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para links (laranja)
-.setDescription(`🔗 Link compartilhado \n[Acesse aqui](${link})`)
+.setDescription(`🔗 **Link compartilhado:** \n[Acesse aqui](${link})`)
 .setFooter({ text: `Link enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [linkEmbed] });
@@ -1505,7 +1506,7 @@ if (message.stickers.size > 0) {
 message.stickers.forEach(async (sticker) => {
 const stickerEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para figurinhas (laranja)
-.setDescription(`🖼️ Figurinha compartilhada \n[Veja a figurinha aqui](${sticker.url})`) // Link da figurinha incluído na descrição
+.setDescription(`🖼️ **Figurinha compartilhada: ** \n[Veja a figurinha aqui](${sticker.url})`) // Link da figurinha incluído na descrição
 .setFooter({ text: `Figurinha enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [stickerEmbed] });
@@ -1519,7 +1520,7 @@ if (emojis) {
 for (const emoji of emojis) {
 const emojiEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para emojis (laranja)
-.setDescription(`😄 Emoji compartilhado: ${emoji}`)
+.setDescription(`😄 **Emoji compartilhado:** ${emoji}`)
 .setFooter({ text: `Emoji enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [emojiEmbed] });           
@@ -1557,7 +1558,7 @@ client.on('messageCreate', async (message) => {
         // Mensagem de texto do bot
         const botMessageEmbed = new EmbedBuilder()
             .setColor('#FFFF00') // Cor do embed (amarelo)
-            .setDescription(`🤖 Mensagem do Bot: \n${content}`)
+            .setDescription(`🤖 **Mensagem do Bot:** \n${content}`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag} | Servidor: ${message.guild.name}`, iconURL: message.author.displayAvatarURL() });
 
         // Enviar a mensagem embed para todos os canais globais conectados
@@ -1580,6 +1581,42 @@ client.on('messageCreate', async (message) => {
             } catch (error) {
                 console.log(`Canal ${channelId} não encontrado, removendo da lista de conexões.`);
                 globalConnections = globalConnections.filter(id => id !== channelId); // Remove o canal da lista
+            }
+        }
+    }
+});
+
+//Menssagem Editada
+client.on('messageUpdate', async (oldMessage, newMessage) => {
+    // Verifica se a mensagem editada está em um canal global
+    if (globalConnections.includes(newMessage.channel.id)) {
+        // Verifica se a mensagem foi realmente alterada
+        if (oldMessage.content === newMessage.content) return;
+
+        // Itera sobre todos os canais conectados globalmente
+        for (const targetChannelId of globalConnections) {
+            if (targetChannelId !== newMessage.channel.id) {
+                const targetChannel = await client.channels.fetch(targetChannelId);
+
+                if (targetChannel) {
+                    // Aguarda 2 segundos antes de enviar a mensagem editada
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Cria o conteúdo da mensagem com a edição
+                    const editContent = `✏️ **Mensagem Editada:**\n\n**Antes:** ${oldMessage.content}\n**Agora:** ${newMessage.content}`;
+
+                    // Cria um embed para a mensagem editada
+                    const embed = new EmbedBuilder()
+                        .setColor('#FFFF00') // Amarelo para indicar edição
+                        .setDescription(editContent)
+                        .setFooter({ 
+                            text: `Mensagem editada por ${newMessage.author.tag}`, // Rodapé com o nome da pessoa que editou
+                            iconURL: newMessage.author.displayAvatarURL() // Ícone do autor da edição
+                        })
+                        .setTimestamp();
+
+                    await targetChannel.send({ embeds: [embed] });
+                }
             }
         }
     }
