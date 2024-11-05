@@ -3,7 +3,6 @@ import { Client, GatewayIntentBits, Events, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import fs from 'fs';
 
-
 // Manter o bot ativo no Replit
 //import express from 'express';
 //const app = express();
@@ -16,6 +15,11 @@ import fs from 'fs';
 //    console.log(`Servidor HTTP rodando na porta ${PORT}`);
 //});
 
+//Senhas online 
+//const TOKEN = process.env.TOKEN;
+//const CLIENT_SECRET = process.env.CLIENT_SECRET;
+//const WEBHOOK_URL = process.env.WEBHOOK_URL;
+
 // Carregue suas variáveis de ambiente
 //config();
 const TOKEN = ;
@@ -23,23 +27,11 @@ const CLIENT_SECRET = ;
 const WEBHOOK_URL = `';`;
 const OWNER_ID = '1067849662347878401'; // Coloque o seu ID de usuário aqui
 
-
-// Limite de palavras
-const MAX_WARNINGS = 3; // Número máximo de avisos permitidos por servidor
-const MAX_WORDS = 50; // Limite de palavras
-const cooldowns = new Map(); // Mapa para gerenciar cooldowns
-const warnedServers = new Map(); // Mapa para rastrear avisos por servidor
-
-//senhas online 
-//const TOKEN = process.env.TOKEN;
-//const CLIENT_SECRET = process.env.CLIENT_SECRET;
-//const WEBHOOK_URL = process.env.WEBHOOK_URL;
-
 // Estruturas de armazenamento
 let channelConnections = {};
 let globalConnections = [];
 let bannedServers = [];
-let mutedUsers = []; // Adiciona a lista de usuários mutados
+let mutedUsers = [];
 
 // Crie uma nova instância do cliente Discord
 const client = new Client({
@@ -51,8 +43,19 @@ const client = new Client({
     ],
 });
 
+// Função para verificar se um canal existe e se o bot tem acesso
+async function checkChannelAccess(channelId) {
+    try {
+        const channel = await client.channels.fetch(channelId);
+        return channel && channel.permissionsFor(client.user).has('SEND_MESSAGES');
+    } catch (error) {
+        console.error(`Erro ao acessar canal ${channelId}: ${error.message}`);
+        return false;
+    }
+}
+
 // Função para carregar conexões
-function loadConnections() {
+async function loadConnections() {
     if (fs.existsSync('Salvamento.json')) {
         try {
             const data = fs.readFileSync('Salvamento.json', 'utf8');
@@ -60,20 +63,29 @@ function loadConnections() {
                 channelConnections = {};
                 globalConnections = [];
                 bannedServers = [];
-                mutedUsers = []; // Inicializa lista de usuários mutados ao carregar dados vazios
+                mutedUsers = [];
             } else {
                 const parsedData = JSON.parse(data);
                 channelConnections = parsedData.channelConnections || {};
                 globalConnections = parsedData.globalConnections || [];
                 bannedServers = parsedData.bannedServers || [];
-                mutedUsers = parsedData.mutedUsers || []; // Carrega a lista de usuários mutados
+                mutedUsers = parsedData.mutedUsers || [];
+
+                // Verifica cada canal e remove os que não são acessíveis
+                for (const channelId of Object.keys(channelConnections)) {
+                    const hasAccess = await checkChannelAccess(channelId);
+                    if (!hasAccess) {
+                        console.log(`Canal removido (sem acesso): ${channelId}`);
+                        delete channelConnections[channelId]; // Remove o canal das conexões
+                    }
+                }
             }
         } catch (error) {
             console.error("Erro ao carregar conexões: ", error);
             channelConnections = {};
             globalConnections = [];
             bannedServers = [];
-            mutedUsers = []; // Reinicia lista de usuários mutados em caso de erro
+            mutedUsers = [];
         }
     }
 }
@@ -84,7 +96,7 @@ function saveConnections() {
         channelConnections,
         globalConnections,
         bannedServers,
-        mutedUsers // Salva a lista de usuários mutados
+        mutedUsers 
     }, null, 4));
 }
 
@@ -103,6 +115,13 @@ client.on('guildDelete', async (guild) => {
 loadConnections();
 
 //parte 3 Funções utilitárias, como formatação de data e regras do servidor
+
+// Limite de palavras
+const MAX_WARNINGS = 3; // Número máximo de avisos permitidos por servidor
+const MAX_WORDS = 50; // Limite de palavras
+const cooldowns = new Map(); // Mapa para gerenciar cooldowns
+const warnedServers = new Map(); // Mapa para rastrear avisos por servidor
+
 // Função que formata a data e hora corretamente
 function formatDateTime() {
 const now = new Date();
@@ -111,7 +130,7 @@ const date = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year
 return `🕘 ${date} | 🗓️ ${hours}`;
 }
 // Regras do Danny-Chat
-const dchatRules = `
+const mensagemRegras = `
 1. **Use o bom senso:** Seja considerado com os outros e suas opiniões. Sem ofensas, linguagem extrema ou qualquer ação que possa perturbar o conforto do chat.
 2. **Sem spam ou flooding:** Evite mensagens repetidas, sem sentido ou excessivamente longas.
 3. **Mantenha assuntos privados:** Evite compartilhar informações pessoais na rede.
@@ -123,8 +142,20 @@ const dchatRules = `
 Qualquer dúvida? Junte-se ao nosso [servidor de suporte](https://discord.gg/8GWFWNmjTa).
 `;
 
+const mensagemInfos = `
+O Danny Chat é um bot que conecta servidores, permitindo que as mensagens enviadas em um canal sejam visíveis em todos os servidores conectados.
+
+**Como Funciona:**
+- Ao enviar uma mensagem neste canal, ela será replicada em todos os canais que estão conectados globalmente.
+- Para que o bot consiga enviar sua mensagem, ele transforma você em "app". Isso é necessário, pois sem essa transformação, a mensagem não poderia ser enviada para os outros servidores.
+
+**Conectando Canais:**
+- Você pode conectar seu canal a outros servidores utilizando o comando \`!global\`.
+- Uma vez conectado, todas as mensagens enviadas aqui serão compartilhadas com os servidores que fazem parte da conexão.
+`;
+
 // Lista de palavrões (incluindo os fornecidos)
-const forbiddenWords = [
+const palavrasProibidas = [
 'aidético', 'aidética', 'aleijado', 'aleijada', 'analfabeto', 'analfabeta',
 'anus', 'anão', 'anã', 'arrombado', 'apenado', 'apenada', 'baba-ovo', 
 'babaca', 'babaovo', 'bacura', 'bagos', 'baianada', 'baitola', 'barbeiro',
@@ -203,7 +234,7 @@ client.on('messageCreate', async (message) => {
     // Inicializa contador de avisos para o servidor
     if (!warnedServers.has(message.guild.id)) {
         warnedServers.set(message.guild.id, {
-            forbiddenWordWarnings: 0,
+            palavrasProibidasWarnings: 0,
             repeatedMessageWarnings: 0,
             wordLimitWarnings: 0,
             messageHistory: []
@@ -212,10 +243,10 @@ client.on('messageCreate', async (message) => {
     const serverWarnings = warnedServers.get(message.guild.id);
 
     // Verificar se a mensagem contém alguma palavra proibida
-    const containsForbiddenWord = forbiddenWords.some(word => message.content.toLowerCase().includes(word));
+    const containsPalavraProibida = palavrasProibidas.some(word => message.content.toLowerCase().includes(word));
 
-    if (containsForbiddenWord) {
-        const remainingWarnings = 5 - serverWarnings.forbiddenWordWarnings;
+    if (containsPalavraProibida) {
+        const remainingWarnings = 5 - serverWarnings.palavrasProibidasWarnings;
         const warningEmbed = new EmbedBuilder()
             .setColor('#FF0000') // Cor do embed para aviso (vermelho)
             .setTitle('🚫 Aviso')
@@ -225,10 +256,10 @@ client.on('messageCreate', async (message) => {
         await message.channel.send({ embeds: [warningEmbed] });
 
         // Incrementa o contador de avisos por palavrões
-        serverWarnings.forbiddenWordWarnings += 1;
+        serverWarnings.palavrasProibidasWarnings += 1;
 
         // Verifica se o número de avisos por palavrões ultrapassa o limite
-        if (serverWarnings.forbiddenWordWarnings >= 5) { // Limite de 5 avisos
+        if (serverWarnings.palavrasProibidasWarnings >= 5) { // Limite de 5 avisos
             await disconnectServer(message); // Desconecta o servidor se atingir o limite
             return;
         }
@@ -249,7 +280,7 @@ client.on('messageCreate', async (message) => {
         const repeatWarningEmbed = new EmbedBuilder()
             .setColor('#FF0000')
             .setTitle('🚫 Aviso')
-            .setDescription(`Mensagens repetidas não são permitidas.\n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setDescription(`Mensagens repetidas não são permitidas.\nVocê só tem mais ${remainingWarnings} avisos antes de desconectar.`)
             .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
         await message.channel.send({ embeds: [repeatWarningEmbed] });
@@ -263,40 +294,32 @@ client.on('messageCreate', async (message) => {
             return;
         }
     }
-const MAX_WORDS = 100; // Defina o limite de palavras
 
-// Verifica se `serverWarnings` já existe, se não, inicializa
-if (!serverWarnings) {
-    serverWarnings = {
-        wordLimitWarnings: 0 // Inicializa o contador de avisos
-    };
-}
+    const MAX_WORDS = 100; // Defina o limite de palavras
 
-const messageWordCount = message.content.split(/\s+/).length;
+    const messageWordCount = message.content.split(/\s+/).length;
 
-if (messageWordCount > MAX_WORDS) {
-    // Calcula o número restante de avisos
-    const remainingWarnings = 5 - serverWarnings.wordLimitWarnings;
+    if (messageWordCount > MAX_WORDS) {
+        const remainingWarnings = 5 - serverWarnings.wordLimitWarnings;
 
-    const wordLimitEmbed = new EmbedBuilder()
-        .setColor('#FFFF00') // Cor do embed para limite de palavras (amarelo)
-        .setTitle('⚠️ Aviso')
-        .setDescription(`Sua mensagem excede o limite de ${MAX_WORDS} palavras. \n Você só tem mais ${remainingWarnings} avisos antes de desconectar.`)
-        .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
+        const wordLimitEmbed = new EmbedBuilder()
+            .setColor('#FFFF00') // Cor do embed para limite de palavras (amarelo)
+            .setTitle('⚠️ Aviso')
+            .setDescription(`Sua mensagem excede o limite de ${MAX_WORDS} palavras. \nVocê só tem mais ${remainingWarnings} avisos antes de desconectar.`)
+            .setFooter({ text: `Mensagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
-    await message.channel.send({ embeds: [wordLimitEmbed] });
+        await message.channel.send({ embeds: [wordLimitEmbed] });
 
-    // Incrementa o contador de avisos por limite de palavras
-    serverWarnings.wordLimitWarnings += 1;
+        // Incrementa o contador de avisos por limite de palavras
+        serverWarnings.wordLimitWarnings += 1;
 
-    // Verifica se o número de avisos por limite de palavras ultrapassa o limite
-    if (serverWarnings.wordLimitWarnings >= 5) { // Limite de 5 avisos
-        await disconnectServer(message); // Desconecta o servidor se atingir o limite
-        return; // Retorna após desconectar
+        // Verifica se o número de avisos por limite de palavras ultrapassa o limite
+        if (serverWarnings.wordLimitWarnings >= 5) { // Limite de 5 avisos
+            await disconnectServer(message); // Desconecta o servidor se atingir o limite
+            return; // Retorna após desconectar
+        }
     }
-}
-    
- 
+
 }); // Fechamento do evento 'messageCreate'
 
 // Função para desconectar o servidor automaticamente
@@ -323,27 +346,35 @@ const disconnectServer = async (message) => {
             console.log(`Erro ao enviar mensagem para o canal ${id}: ${err.message}`);
         }
     }
+
+    // Log da desconexão
+    console.log(`O servidor **${message.guild.name}** foi desconectado da conexão global.`);
 };
 
 //parte 4 Definição dos comandos do bot, com suas respectivas funcionalidades
 const commands = {
-criador: {
-description: 'Mostra quem é o criador do bot',
-execute: (message) => {
-const embed = new EmbedBuilder()
-.setColor('#800080')
-.setTitle('🌠 Danny Barbosa')
-.setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
-.setDescription('🌟 Criado por <@1067849662347878401> ! \n [Acesse o Github do projeto!](https://github.com/DannyBarbosaBR/Cross-Chat-Bot-Discord-BR/)')
-.setFooter({
-text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
-message.channel.send({ embeds: [embed] });
-},
-},
     
+ criador: {
+    description: 'Mostra quem é o criador do bot',
+    execute: (message) => {
+        const embed = new EmbedBuilder()
+            .setColor('#800080')
+            .setTitle('🌠 Danny Barbosa')
+            .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+            .setDescription('🌟 Criado por <@1067849662347878401> ! \n\n' + 
+                '-----\n' +
+                '🔍 Para mais informações, use o comando `!info`.\n' +
+                '📚 Para ajuda, utilize o comando `!ajuda`.\n' +
+                '-----\n' +
+                '[Acesse o Github do projeto!](https://github.com/DannyBarbosaBR/Cross-Chat-Bot-Discord-BR/)')
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
+        message.channel.send({ embeds: [embed] });
+    },
+},
     
 buscar: {
     description: 'Busca informações em fontes confiáveis.',
@@ -456,78 +487,83 @@ buscar: {
     },
 },
     
-    
 tempo: {
-description: 'Mostra o horário de funcionamento atual.',
-execute: async (message) => {
-const hoje = new Date();
-const diasDaSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-const diaAtual = diasDaSemana[hoje.getDay()]; // Obtém o dia da semana atual
+    description: 'Mostra o horário de funcionamento atual.',
+    execute: async (message) => {
+        const hoje = new Date();
+        const diasDaSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const diaAtual = diasDaSemana[hoje.getDay()]; // Obtém o dia da semana atual
 
-const horarios = {
-Domingo: 'Fora de horário',
-Segunda: '19:00 - 22:00',
-Terça: '19:00 - 22:00',
-Quarta: '19:00 - 22:00',
-Quinta: '19:00 - 22:00',
-Sexta: 'Fora de horário',
-Sábado: '14:00 - 21:00',
-};
+        const horarios = {
+            Domingo: 'Fora de horário',
+            Segunda: '19:00 - 22:00',
+            Terça: '19:00 - 22:00',
+            Quarta: '19:00 - 22:00',
+            Quinta: '19:00 - 22:00',
+            Sexta: 'Fora de horário',
+            Sábado: '14:00 - 21:00',
+        };
 
-const horarioHoje = horarios[diaAtual]; // Obtém o horário do dia atual
-const ultimoHorario = {
-Segunda: '22:00',
-Terça: '22:00',
-Quarta: '22:00',
-Quinta: '22:00',
-Sábado: '21:00',
-}[diaAtual] || null; // Define o último horário
+        const horarioHoje = horarios[diaAtual]; // Obtém o horário do dia atual
+        const ultimoHorario = {
+            Segunda: '22:00',
+            Terça: '22:00',
+            Quarta: '22:00',
+            Quinta: '22:00',
+            Sábado: '21:00',
+        }[diaAtual] || null; // Define o último horário
 
-const resposta = `🕘 **Horário de Atividade para Hoje: \n(${diaAtual}):** ${horarioHoje}`;
+        const resposta = `🕘 **Horário de Atividade para Hoje: \n(${diaAtual}):** ${horarioHoje}`;
 
-const embed = new EmbedBuilder()
-.setColor('#FFC0CB')
-.setTitle('📅 Horário de Funcionamento')
-.setDescription(resposta)
-.setFooter({
-text: `🌠 Danny Barbosa | ${formatDateTime()}`,
-iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
-})
-.setTimestamp();
+        const embed = new EmbedBuilder()
+            .setColor('#FFC0CB')
+            .setTitle('📅 Horário de Funcionamento')
+            .setDescription(resposta)
+            .setFooter({
+                text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+            })
+            .setTimestamp();
 
-message.channel.send({ embeds: [embed] });
+        message.channel.send({ embeds: [embed] });
 
-// Verifica se o horário está fora de horário
-if (horarioHoje === 'Fora de horário') {
-// Mensagem de parada embutida
-const shutdownEmbed = new EmbedBuilder()
-.setTitle("📡 Bot Fora do Ar!")
-.setDescription("🚫 O Danny-Chat está **desligado**. Voltaremos depois!")
-.setColor(0xFF0000)
-.setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
-.setTimestamp()
-.setFooter({ text: `${message.guild.name} - Conectando Comunidades` });
+        // Verifica se o horário está fora de horário
+        if (horarioHoje === 'Fora de horário') {
+            // Log no terminal
+            console.log(`[${new Date().toISOString()}] O bot está fora do ar: ${message.guild.name}`);
+            
+            // Mensagem de parada embutida
+            const shutdownEmbed = new EmbedBuilder()
+                .setTitle("📡 Bot Fora do Ar!")
+                .setDescription("🚫 O Danny-Chat está **desligado**. Voltaremos depois!")
+                .setColor(0xFF0000)
+                .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+                .setTimestamp()
+                .setFooter({ text: `${message.guild.name} - Conectando Comunidades` });
 
-message.channel.send({ embeds: [shutdownEmbed] });
-return; // Encerra a execução para evitar mais envios
-}
+            message.channel.send({ embeds: [shutdownEmbed] });
+            return; // Encerra a execução para evitar mais envios
+        }
 
-// Verifica se o horário atual ultrapassou o último horário
-if (ultimoHorario && hoje.toTimeString().split(' ')[0] > ultimoHorario) {
-// Mensagem de parada embutida
-const shutdownEmbed = new EmbedBuilder()
-.setTitle("📡 Bot Fora do Ar!")
-.setDescription("🚫 O Danny-Chat está **desligado**. Voltaremos depois!")
-.setColor(0xFF0000)
-.setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
-.setTimestamp()
-.setFooter({ text: `${message.guild.name} - Conectando Comunidades` });
+        // Verifica se o horário atual ultrapassou o último horário
+        if (ultimoHorario && hoje.toTimeString().split(' ')[0] > ultimoHorario) {
+            // Log no terminal
+            console.log(`[${new Date().toISOString()}] O bot está fora do ar: ${message.guild.name}`);
+            
+            // Mensagem de parada embutida
+            const shutdownEmbed = new EmbedBuilder()
+                .setTitle("📡 Bot Fora do Ar!")
+                .setDescription("🚫 O Danny-Chat está **desligado**. Voltaremos depois!")
+                .setColor(0xFF0000)
+                .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+                .setTimestamp()
+                .setFooter({ text: `${message.guild.name} - Conectando Comunidades` });
 
-message.channel.send({ embeds: [shutdownEmbed] });
-}
+            message.channel.send({ embeds: [shutdownEmbed] });
+        }
+    },
 },
-},
-
+    
 servidores: {
 description: 'Mostra todos os servidores conectados',
 execute: (message) => {
@@ -547,24 +583,14 @@ iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
 message.channel.send({ embeds: [embed] });
 }, // Corrigido: removeu o ponto e vírgula aqui
 },
-    
+
 info: {
-    description: 'Exibe informações sobre o Danny Chat.',
+    description: 'Exibe informações sobre o Chat Global.',
     async execute(message) {
         const embedInfo = new EmbedBuilder()
             .setColor('#00FFFF')  // Cor ciano
             .setTitle("🌍 Informações do Chat Global")
-            .setDescription(`
-O Danny Chat é um bot que conecta servidores, permitindo que as mensagens enviadas em um canal sejam visíveis em todos os servidores conectados.
-
-**Como Funciona:**
-- Ao enviar uma mensagem neste canal, ela será replicada em todos os canais que estão conectados globalmente.
-- Para que o bot consiga enviar sua mensagem, ele transforma você em "app". Isso é necessário, pois sem essa transformação, a mensagem não poderia ser enviada para os outros servidores.
-
-**Conectando Canais:**
-- Você pode conectar seu canal a outros servidores utilizando o comando \`!global\`.
-- Uma vez conectado, todas as mensagens enviadas aqui serão compartilhadas com os servidores que fazem parte da conexão.
-            `)
+            .setDescription(mensagemInfos)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4'
@@ -574,7 +600,7 @@ O Danny Chat é um bot que conecta servidores, permitindo que as mensagens envia
         return message.reply({ embeds: [embedInfo] });
     },
 },
-    
+
 expulsos: {
     description: 'Mostra todos os expulsos da conexão.',
     execute: (message) => {
@@ -641,7 +667,7 @@ desligar: {
         // Mensagem de parada embutida
         const shutdownEmbed = new EmbedBuilder()
             .setTitle("📡 Bot Fora do Ar!")
-            .setDescription("🚫O Danny-Chat está **desligado**. Voltaremos depois!")
+            .setDescription("🚫 O Danny-Chat está **desligado**. Voltaremos depois!")
             .setColor(0xFF0000)
             .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
             .setTimestamp()
@@ -662,7 +688,6 @@ desligar: {
     },
 },
     
-// Comando !juntar - Junta o canal a outro canal do servidor.
 juntar: {
     description: 'Junta mensagens de um canal a outro.',
     execute: async (message) => {
@@ -696,6 +721,21 @@ juntar: {
 
         if (!channelConnections[message.guild.id]) {
             channelConnections[message.guild.id] = [];
+        }
+
+        // Verifica se já existe uma conexão para o servidor
+        const existingConnection = channelConnections[message.guild.id].find(conn => conn.sourceChannelId === message.channel.id);
+        if (existingConnection) {
+            const alreadyConnectedEmbed = new EmbedBuilder()
+                .setColor('#FFA500') // Laranja para aviso
+                .setTitle('🔗 Conexão Existente')
+                .setDescription('Este canal já está juntado a outro canal.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            return message.channel.send({ embeds: [alreadyConnectedEmbed] });
         }
 
         channelConnections[message.guild.id].push({
@@ -734,6 +774,9 @@ juntar: {
                     await new Promise(resolve => setTimeout(resolve, 2000)); // Espera 2000 ms (2 segundos)
                     await targetChannelToSend.send({ embeds: [embedMessage] }); // Envia a mensagem embed para o canal de destino
                 }
+
+                // Log da mensagem enviada
+                console.log(`Mensagem de <#${message.channel.id}> enviada para <#${targetChannel.id}>: ${msg.content}`);
             }
         };
 
@@ -743,7 +786,7 @@ juntar: {
         saveConnections(); // Salva as conexões
     },
 },
-
+    
 global: {
     description: 'Conecta o canal atual a outros servidores.',
     execute: async (message) => {
@@ -762,12 +805,12 @@ global: {
             return message.channel.send({ embeds: [bannedServerEmbed] });
         }
 
-        // Verifica se o usuário tem permissão para usar o comando
-        if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
+        // Verifica se o usuário tem permissão para usar o comando (administrador ou dono do servidor)
+        if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR') && message.guild.ownerId !== message.author.id) {
             const noPermissionEmbed = new EmbedBuilder()
                 .setColor('#FF0000')
                 .setTitle('❌ Permissão Negada')
-                .setDescription('Você não tem permissão para usar este comando.')
+                .setDescription('Você precisa ser o dono do servidor ou ter permissão de administrador para usar este comando.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -777,11 +820,17 @@ global: {
             return message.channel.send({ embeds: [noPermissionEmbed] });
         }
 
-        if (globalConnections.includes(message.channel.id)) {
+        // Verifica se já existe uma conexão global para o servidor
+        const existingConnection = globalConnections.find(channelId => {
+            const channel = client.channels.cache.get(channelId);
+            return channel && channel.guild.id === message.guild.id;
+        });
+
+        if (existingConnection) {
             const alreadyConnectedEmbed = new EmbedBuilder()
                 .setColor('#FFA500')
                 .setTitle('🔗 Conexão Global')
-                .setDescription('Este canal já está conectado globalmente.\nPara mais detalhes, use `!informações`.')
+                .setDescription('Este servidor já possui um canal conectado globalmente. \nNão é possível conectar outro canal.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -803,12 +852,16 @@ global: {
             })
             .setTimestamp();
 
+        // Envia mensagem no canal informando a conexão global
         message.channel.send({ embeds: [connectedEmbed] });
+
+        // Adiciona uma mensagem de login no console
+        console.log(`O servidor "${message.guild.name}" foi conectado na Conexão Global.`);
 
         const embedRules = new EmbedBuilder()
             .setColor('#FFFF00')
             .setTitle('📜 Regras do Danny-Chat')
-            .setDescription(dchatRules)
+            .setDescription(mensagemRegras)
             .setFooter({
                 text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                 iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -845,8 +898,7 @@ global: {
             try {
                 await channel.send({ embeds: [notificationEmbed] });
             } catch (err) {
-                console.log(`Erro ao enviar mensagem para o
- canal ${channel.id}: ${err.message}`);
+                console.log(`Erro ao enviar mensagem para o canal ${channel.id}: ${err.message}`);
             }
         }
 
@@ -854,11 +906,27 @@ global: {
     },
 },
     
-// Comando !sair - Desconecta o canal atual das conexões ativas.
 sair: {
     description: 'Desconecta um canal conectado da conexão.',
     async execute(message) {
+        // Verifica se o usuário tem permissão para usar o comando
+        if (message.author.id !== OWNER_ID && !message.member.permissions.has('ADMINISTRATOR')) {
+            const noPermissionEmbed = new EmbedBuilder()
+                .setColor('#FF0000') // Vermelho para erro
+                .setTitle('❌ Permissão Negada')
+                .setDescription('Você não tem permissão para usar este comando.')
+                .setFooter({
+                    text: `🌠 Danny Barbosa | ${formatDateTime()}`,
+                    iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
+                })
+                .setTimestamp();
+            return message.channel.send({ embeds: [noPermissionEmbed] });
+        }
+
         const channelId = message.channel.id;
+
+        // Log no console
+        console.log(`[LOG] O usuário ${message.author.tag} desconectou o canal ${channelId} (${message.channel.name})`);
 
         // Verifica se o canal está na lista de conexões locais
         if (channelConnections[message.guild.id]) {
@@ -879,7 +947,6 @@ sair: {
                     .setTimestamp();
                 await message.channel.send({ embeds: [embed] });
 
-                // Notificação de desconexão para o canal conectado
                 const disconnectEmbed = new EmbedBuilder()
                     .setColor('#FF0000') // Vermelho para desconexão
                     .setTitle('🔌 Desconectado da Conexão')
@@ -902,7 +969,6 @@ sair: {
 
         // Verifica se o canal está na lista de conexões globais
         if (globalConnections.includes(channelId)) {
-            // Remove o canal da lista de conexões globais
             globalConnections = globalConnections.filter(id => id !== channelId);
             const embed = new EmbedBuilder()
                 .setColor('#008000') // Verde claro para sucesso
@@ -915,7 +981,6 @@ sair: {
                 .setTimestamp();
             await message.channel.send({ embeds: [embed] });
 
-            // Notificação de desconexão para os canais conectados globalmente
             const disconnectEmbed = new EmbedBuilder()
                 .setColor('#FF0000') // Vermelho para desconexão
                 .setTitle('🔌 Desconectado da Conexão Global')
@@ -926,7 +991,6 @@ sair: {
                 })
                 .setTimestamp();
 
-            // Envia a notificação para todos os canais conectados
             for (const id of globalConnections) {
                 try {
                     const channel = await client.channels.fetch(id);
@@ -952,7 +1016,7 @@ sair: {
         await message.channel.send({ embeds: [embed] });
     },
 },
-    
+
 ajuda: {
 description: 'Mostra todos os comandos disponíveis.',
 execute: (message) => {
@@ -973,11 +1037,12 @@ message.channel.send({ embeds: [embed] });
 banir: {
     description: 'Bane um servidor da lista de conexões.',
     execute: async (message, args) => {
-        if (message.author.id !== OWNER_ID) {
+        // Verifica se o usuário é administrador ou dono do bot
+        if (!message.member.permissions.has('ADMINISTRATOR') && message.author.id !== OWNER_ID) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // Vermelho para erro
                 .setTitle('❌ Permissão Negada')
-                .setDescription('Apenas o dono do bot pode usar este comando.')
+                .setDescription('Apenas administradores ou o dono do bot podem usar este comando.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -1003,6 +1068,9 @@ banir: {
         if (!bannedServers.includes(serverId)) {
             bannedServers.push(serverId);
             saveConnections();
+
+            // Log da ação de banimento
+            console.log(`Servidor ${serverId} banido por ${message.author.tag} (${message.author.id})`);
 
             // Notificação de sucesso para o usuário que baniu
             const successEmbed = new EmbedBuilder()
@@ -1047,13 +1115,14 @@ banir: {
         } else {
             const alreadyBannedEmbed = new EmbedBuilder()
                 .setColor('#FF0000') // Vermelho para erro
-                .setTitle('⚠️ Servidor Já Banido')
+                .setTitle('⚠️ Servidor Está Banido')
                 .setDescription('Este servidor já está na lista de banidos.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
                 })
                 .setTimestamp();
+
             message.channel.send({ embeds: [alreadyBannedEmbed] });
         }
     },
@@ -1062,11 +1131,12 @@ banir: {
 desbanir: {
     description: 'Remove o banimento de um servidor.',
     execute: async (message, args) => {
-        if (message.author.id !== OWNER_ID) {
+        // Verifica se o usuário é administrador ou dono do bot
+        if (!message.member.permissions.has('ADMINISTRATOR') && message.author.id !== OWNER_ID) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // Vermelho para erro
                 .setTitle('❌ Permissão Negada')
-                .setDescription('Apenas o dono do bot pode usar este comando.')
+                .setDescription('Apenas administradores ou o dono do bot podem usar este comando.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -1092,6 +1162,9 @@ desbanir: {
         const index = bannedServers.indexOf(serverId);
         if (index !== -1) {
             bannedServers.splice(index, 1);
+
+            // Log da ação de desbanimento
+            console.log(`Servidor ${serverId} desbanido por ${message.author.tag} (${message.author.id})`);
 
             // Salva a lista atualizada de banidos após remover o servidor
             saveConnections();
@@ -1133,11 +1206,12 @@ desbanir: {
 mutar: {
     description: 'Muta um usuário em todas as conexões.',
     execute: async (message, args) => {
-        if (message.author.id !== OWNER_ID) {
+        // Verifica se o usuário é administrador ou dono do bot
+        if (!message.member.permissions.has('ADMINISTRATOR') && message.author.id !== OWNER_ID) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000')
                 .setTitle('❌ Permissão Negada')
-                .setDescription('Apenas o dono do bot pode usar este comando.')
+                .setDescription('Apenas administradores ou o dono do bot podem usar este comando.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -1164,6 +1238,9 @@ mutar: {
             mutedUsers.push(user.id);
             saveConnections();
 
+            // Log da ação de mutar
+            console.log(`Usuário ${user.tag} (${user.id}) mutado por ${message.author.tag} (${message.author.id})`);
+
             const successEmbed = new EmbedBuilder()
                 .setColor('#FF0000')
                 .setTitle('🔇 Usuário Mutado')
@@ -1181,7 +1258,7 @@ mutar: {
         } else {
             const alreadyMutedEmbed = new EmbedBuilder()
                 .setColor('#FF0000')
-                .setTitle('⚠️ Usuário Já Mutado')
+                .setTitle('⚠️ Usuário Está Mutado')
                 .setDescription('Este usuário já está na lista de mutados.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
@@ -1196,11 +1273,12 @@ mutar: {
 desmutar: {
     description: 'Desmuta usuário em todas as conexões.',
     execute: async (message, args) => {
-        if (message.author.id !== OWNER_ID) {
+        // Verifica se o usuário é administrador ou dono do bot
+        if (!message.member.permissions.has('ADMINISTRATOR') && message.author.id !== OWNER_ID) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000')
                 .setTitle('❌ Permissão Negada')
-                .setDescription('Apenas o dono do bot pode usar este comando.')
+                .setDescription('Apenas administradores ou o dono do bot podem usar este comando.')
                 .setFooter({
                     text: `🌠 Danny Barbosa | ${formatDateTime()}`,
                     iconURL: 'https://avatars.githubusercontent.com/u/132908376?v=4',
@@ -1227,6 +1305,9 @@ desmutar: {
         if (index !== -1) {
             mutedUsers.splice(index, 1);
             saveConnections();
+
+            // Log da ação de desmutar
+            console.log(`Usuário ${user.tag} (${user.id}) desmutado por ${message.author.tag} (${message.author.id})`);
 
             const unmuteSuccessEmbed = new EmbedBuilder()
                 .setColor('#00FF00')
@@ -1256,10 +1337,11 @@ desmutar: {
         }
     },
 },
-
+    
 }; //fechamento de comandos 
 
 /// Parte 5 Gerenciamento de eventos e compartilhamento de mensagens
+
 client.once(Events.ClientReady, () => {
 console.log(`🌠 ${client.user.tag} está online`);
 loadConnections();
@@ -1504,27 +1586,36 @@ client.on('messageCreate', async (message) => {
 });
 
 //parte 6 final
+
 /// Ready Event - Quando o bot fica online
 client.once('ready', () => {
-console.log(`Bot está ativo como ${client.user.tag}`);
+    console.log(`Bot está ativo como ${client.user.tag}`);
 
-// Mensagem de inicialização embutida
-const embed = new EmbedBuilder()
-.setTitle("📺 Bot Sintonizado!")
-.setDescription("🌠 Danny-Chat está **no ar** e pronto para usar!")
-.setColor(0x00FF00)
-.setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
-.setTimestamp()
-.setFooter({ text: `${client.guilds.cache.first()?.name} - Conectando Comunidades` });
+    // Mensagem de inicialização embutida
+    const embed = new EmbedBuilder()
+        .setTitle("📺 Bot Sintonizado!")
+        .setDescription("🌠 Danny-Chat está **no ar** e pronto para usar!")
+        .setColor(0x00FF00)
+        .setThumbnail("https://avatars.githubusercontent.com/u/132908376?v=4")
+        .setTimestamp()
+        .setFooter({ text: `${client.guilds.cache.first()?.name} - Conectando Comunidades` });
 
-// Envia a mensagem em todos os canais globais conectados
-globalConnections.forEach(async (channelId) => {
-const channel = await client.channels.fetch(channelId).catch(console.error);
-if (channel && channel.isTextBased()) {
-channel.send({ embeds: [embed] }).catch(console.error);
-}
+    // Envia a mensagem em todos os canais globais conectados
+    globalConnections.forEach(async (channelId) => {
+        const channel = await client.channels.fetch(channelId).catch(console.error);
+        if (channel && channel.isTextBased()) {
+            const guild = channel.guild; // Obtém o guild (servidor) do canal
+            channel.send({ embeds: [embed] })
+                .then(() => {
+                    console.log(`Mensagem enviada no servidor: ${guild.name}`); // Log do nome do servidor
+                })
+                .catch(err => {
+                    console.error(`Erro ao enviar mensagem no servidor ${guild.name}:`, err);
+                });
+        }
+    });
 });
-});
+
 
 /// Shutdown Event - Quando o bot é desligado
 
