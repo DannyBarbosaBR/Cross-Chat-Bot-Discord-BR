@@ -1456,7 +1456,7 @@ const isFile = !isImage && !isAudio && !isVideo;
 if (isImage) {
 const attachmentEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para imagens (laranja)
-.setDescription(`🖼️ **Imagem compartilhada:** \n[Veja a imagem aqui](${attachment.url})`) // Link da imagem incluído na descrição
+.setDescription(`🖼️ **Imagem Compartilhada:** \n[Veja a imagem aqui](${attachment.url})`) // Link da imagem incluído na descrição
 .setImage(attachment.url) // Imagem embutida no embed
 .setFooter({ text: `Imagem enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
@@ -1464,21 +1464,21 @@ await targetChannel.send({ embeds: [attachmentEmbed] });
 } else if (isAudio) {
 const audioEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para áudios (laranja)
-.setDescription(`🎶 **Áudio compartilhado:** \n[Ouça o áudio aqui](${attachment.url})`) // Link do áudio incluído na descrição
+.setDescription(`🎶 **Áudio Compartilhado:** \n[Ouça o áudio aqui](${attachment.url})`) // Link do áudio incluído na descrição
 .setFooter({ text: `Áudio enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [audioEmbed] });
 } else if (isVideo) {
 const videoEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para vídeos (laranja)
-.setDescription(`🎥 **Vídeo compartilhado:** \n[Assista ao vídeo aqui](${attachment.url})`) // Link do vídeo incluído na descrição
+.setDescription(`🎥 **Vídeo Compartilhado:** \n[Assista ao vídeo aqui](${attachment.url})`) // Link do vídeo incluído na descrição
 .setFooter({ text: `Vídeo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [videoEmbed] });
 } else if (isFile) {
 const fileEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para outros tipos de arquivos (laranja)
-.setDescription(`💾 **Arquivo compartilhado:**\n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
+.setDescription(`💾 **Arquivo Compartilhado:**\n[Baixe o arquivo aqui](${attachment.url})`) // Link do arquivo incluído na descrição
 .setFooter({ text: `Arquivo enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [fileEmbed] });
@@ -1493,7 +1493,7 @@ if (links) {
 for (const link of links) {
 const linkEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para links (laranja)
-.setDescription(`🔗 **Link compartilhado:** \n[Acesse aqui](${link})`)
+.setDescription(`🔗 **Link Compartilhado:** \n[Acesse aqui](${link})`)
 .setFooter({ text: `Link enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [linkEmbed] });
@@ -1506,7 +1506,7 @@ if (message.stickers.size > 0) {
 message.stickers.forEach(async (sticker) => {
 const stickerEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para figurinhas (laranja)
-.setDescription(`🖼️ **Figurinha compartilhada: ** \n[Veja a figurinha aqui](${sticker.url})`) // Link da figurinha incluído na descrição
+.setDescription(`🖼️ **Figurinha Compartilhada: ** \n[Veja a figurinha aqui](${sticker.url})`) // Link da figurinha incluído na descrição
 .setFooter({ text: `Figurinha enviada por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [stickerEmbed] });
@@ -1520,7 +1520,7 @@ if (emojis) {
 for (const emoji of emojis) {
 const emojiEmbed = new EmbedBuilder()
 .setColor('#FFA500') // Cor do embed para emojis (laranja)
-.setDescription(`😄 **Emoji compartilhado:** ${emoji}`)
+.setDescription(`😄 **Emoji Compartilhado:** ${emoji}`)
 .setFooter({ text: `Emoji enviado por ${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 
 await targetChannel.send({ embeds: [emojiEmbed] });           
